@@ -1,0 +1,70 @@
+/*
+ * Copyright 2012 LinkedIn, Inc
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+{
+  "type":"record",
+  "name":"AttemptStats",
+  "namespace": "com.linkedin.whiteelephant.analysis",
+  "fields": [
+    {"name":"entry","type":
+        [
+          {
+            "type":"record",
+            "name":"AttemptStatsKey",
+            "namespace": "com.linkedin.whiteelephant.analysis",
+            "fields": [
+              {"name":"user","type":"string"},
+              {"name":"time","type":"long"},
+              {"name":"unit","type":{
+                "type":"enum","name":"TimeUnit","namespace": "com.linkedin.whiteelephant.analysis",
+                "symbols":["HOURS"]
+              }},
+              {"name":"cluster","type":"string"},
+              {"name":"excess","type":"boolean"},
+              {"name":"type","type":{
+                "type":"enum","name":"TaskType","namespace":"com.linkedin.whiteelephant.analysis",
+                "symbols":["MAP","REDUCE"]
+              }},
+              {"name":"status","type":{
+                "type":"enum","name":"TaskStatus","namespace":"com.linkedin.whiteelephant.analysis",
+                "symbols":["SUCCESS","FAILED","KILLED"]
+              }}
+            ]
+          },
+
+          {
+            "type":"record",
+            "name":"AttemptStatsValue",
+            "namespace": "com.linkedin.whiteelephant.analysis",
+            "fields": [              
+              {"name":"started","type":"int"},
+              {"name":"finished","type":"int"},
+              
+              {"name":"elapsedMinutes","type":"double"},
+
+              // from counters
+              {"name":"cpuMinutes","type":["double","null"]},
+              {"name":"spilledRecords","type":["long","null"]},
+
+              // from counters, only for reduce phase
+              {"name":"reduceShuffleBytes","type":["long","null"]}
+            ]
+          }
+
+
+
+        ]
+}]}

@@ -1,0 +1,101 @@
+//= require_body
+//= require tablesorter
+//= require rickshaw.min
+
+@import 'vendor/assets/stylesheets/jquery-ui-1.8.24.custom';
+
+@import 'vendor/assets/stylesheets/jquery.multiselect';
+@import 'vendor/assets/stylesheets/jquery.multiselect.filter';
+
+@import 'vendor/assets/stylesheets/bootstrap/bootstrap';
+@import 'vendor/assets/stylesheets/bootstrap/responsive';
+
+.ui-multiselect-checkboxes label input {
+  top: -3px;
+  margin-left: 5px;
+}
+
+.ui-multiselect-checkboxes label span {
+  padding-left: 6px;
+}
+
+.clearfix {
+  clear: both;
+}
+
+footer {
+  padding-top: 72px;
+}
+
+.usage-control {
+  margin-top: 22px;
+  margin-bottom: 25px;
+
+  label {
+    margin-left: 14px;
+  }
+}
+
+#pager {
+  margin-top: 10px;
+
+  label {
+    margin-left: 14px;
+  }
+}
+
+#table {
+  table {
+    margin-left: 14px;
+  }
+}
+
+
+#chart-container {
+  position: relative;
+}
+
+#chart3 {
+  position: relative;
+  left: 40px;
+}
+
+#y_axis {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+}
+
+#legend {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.rickshaw_legend {
+  background: white;
+  color: black;
+
+  // border-color: #444;
+  // border-width: 1px;
+  // border-style: solid;
+  // border-radius: 10px;
+
+  li {
+    padding-top: 3px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding-left: 4px;
+  }
+
+  li:hover {
+    background: #BBB;
+  }
+}
+
+.rickshaw_graph .x_tick .title {
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  opacity: 1;
+}

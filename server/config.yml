@@ -1,0 +1,26 @@
+usage_loading:
+  # How often to check for new aggregated usage data to load.
+  refresh_in_mins: 15
+
+  # When running against local disk
+  local:
+    # "ant test-data" generates data in this path
+    file_pattern: data/usage/*.avro 
+
+  # When running against HDFS as source data
+  hadoop:
+
+    # Glob pattern to load usage files from HDFS.
+    file_pattern: hdfs://namenode.url.com:port/path/to/root/usage-per-hour
+
+    # Directories containing JARs to be added to the classpath.
+    libs:
+      - /hadoop/binaries
+      - /hadoop/binaries/lib
+
+    # Where to find the Hadoop configuration.  This will be added to the classpath.
+    conf_dir: /hadoop/conf
+
+    secure:
+      principal: username
+      keytab: /home/username/username.keytab

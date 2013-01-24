@@ -1,0 +1,12 @@
+tmp/
+.rbenv
+.ruby-version
+.setup-success
+lib/jars/
+data/
+lib/ivy/
+lib/classes/
+eval_data/
+*.swp
+*.log
+*.war

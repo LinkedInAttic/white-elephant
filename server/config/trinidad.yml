@@ -1,0 +1,6 @@
+---
+  port: 3000
+  environment: development
+  jruby_min_runtimes: 1 # min number of JRuby runtimes to use
+  jruby_max_runtimes: 1 # max number of JRuby runtimes to use
+  jruby_compat_version: 1.9

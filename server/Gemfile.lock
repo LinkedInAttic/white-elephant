@@ -1,0 +1,95 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    backports (2.6.4)
+    bcrypt-ruby (3.0.1-java)
+    builder (3.1.3)
+    coffee-script (2.2.0)
+      coffee-script-source
+      execjs
+    coffee-script-source (1.3.3)
+    commonjs (0.2.6)
+    emk-sinatra-url-for (0.2.1)
+      sinatra (>= 0.9.1.1)
+    eventmachine (1.0.0-java)
+    execjs (1.4.0)
+      multi_json (~> 1.0)
+    handlebars_assets (0.8.2)
+      execjs (>= 1.2.9)
+      sprockets (>= 2.0.3)
+      tilt
+    hike (1.2.1)
+    jruby-jars (1.6.7.2)
+    jruby-rack (1.1.10)
+    json (1.7.3-java)
+    kramdown (0.14.0)
+    less (2.2.2)
+      commonjs (~> 0.2.6)
+    multi_json (1.3.6)
+    rack (1.4.1)
+    rack-cache (1.2)
+      rack (>= 0.4)
+    rack-protection (1.2.0)
+      rack
+    rack-test (0.6.1)
+      rack (>= 1.0)
+    rack_csrf (2.4.0)
+      rack (>= 0.9)
+    rake (0.9.4)
+    rubyzip (0.9.9)
+    sinatra (1.3.3)
+      rack (~> 1.3, >= 1.3.6)
+      rack-protection (~> 1.2)
+      tilt (~> 1.3, >= 1.3.3)
+    sinatra-contrib (1.3.1)
+      backports (>= 2.0)
+      eventmachine
+      rack-protection
+      rack-test
+      sinatra (~> 1.3.0)
+      tilt (~> 1.3)
+    sprockets (2.5.0)
+      hike (~> 1.2)
+      multi_json (~> 1.0)
+      rack (~> 1.0)
+      tilt (~> 1.1, != 1.3.0)
+    therubyrhino (2.0.1)
+      therubyrhino_jar (>= 1.7.3)
+    therubyrhino_jar (1.7.4)
+    tilt (1.3.3)
+    trinidad (1.4.1)
+      jruby-rack (>= 1.1.7)
+      trinidad_jars (>= 1.0.5)
+    trinidad_daemon_extension (0.3.1)
+      trinidad_jars (>= 1.0.0)
+    trinidad_jars (1.0.7)
+    tzinfo (0.3.33)
+    warbler (1.3.6)
+      jruby-jars (>= 1.4.0)
+      jruby-rack (>= 1.0.0)
+      rake (>= 0.8.7)
+      rubyzip (>= 0.9.4)
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  bcrypt-ruby
+  builder
+  coffee-script
+  emk-sinatra-url-for
+  execjs
+  handlebars_assets
+  json
+  kramdown
+  less
+  rack-cache (~> 1.2)
+  rack_csrf
+  sinatra
+  sinatra-contrib
+  sprockets
+  therubyrhino
+  trinidad
+  trinidad_daemon_extension
+  tzinfo
+  warbler

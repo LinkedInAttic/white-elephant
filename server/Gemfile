@@ -1,0 +1,31 @@
+source :rubygems
+
+gem "sinatra"
+gem "sinatra-contrib"
+gem "json"
+gem "builder"
+gem "less"
+gem "sprockets"
+gem "coffee-script"
+gem "rack-cache", "~> 1.2"
+gem "rack_csrf"
+gem "kramdown"
+gem "bcrypt-ruby"
+gem 'emk-sinatra-url-for'
+gem 'handlebars_assets'
+
+# for proper time zone handling
+gem 'tzinfo' 
+
+# js execution in Ruby
+gem 'execjs'
+gem 'therubyrhino'
+
+group :development do
+  # local execution
+  gem 'trinidad'
+  gem 'trinidad_daemon_extension'
+
+  # for packaging
+  gem 'warbler'
+end

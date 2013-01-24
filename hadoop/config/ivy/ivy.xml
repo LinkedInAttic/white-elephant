@@ -1,0 +1,25 @@
+<ivy-module version="2.0">
+    <info organisation="com.linkedin" module="whiteelephant"/>
+    <configurations>
+      <conf name="common" description="libraries to include in the fat jar" />
+      <conf name="hadoop" description="for hadoop, won't fat jar, only needed for building" />
+    </configurations>
+    <dependencies>
+        <dependency org="org.apache.avro" name="avro" rev="1.7.2" conf="common->default"/>
+        <dependency org="org.apache.avro" name="avro-mapred" rev="1.7.2" conf="common->default"/>
+        <dependency org="org.apache.avro" name="avro-compiler" rev="1.7.2" conf="common->default"/>
+        <dependency org="org.testng" name="testng" rev="6.0.1" conf="common->default"/>        
+        <dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="common->default"/>
+        <dependency org="log4j" name="log4j" rev="1.2.17" conf="common->default"/>
+        <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.6.4" conf="common->default" />
+        <dependency org="joda-time" name="joda-time" rev="1.6" conf="common->default"/>
+        <dependency org="com.googlecode.json-simple" name="json-simple" rev="1.1.1" conf="common->default"/>
+        <dependency org="org.json" name="json" rev="20090211" conf="common->default"/>
+        <dependency org="com.google.guava" name="guava" rev="13.0.1" conf="common->default"/>
+        <dependency org="org.easymock" name="easymock" rev="3.1" conf="common->default"/>
+
+        <dependency org="org.apache.hadoop" name="hadoop-core" rev="1.0.3" conf="hadoop->default"/>
+        <dependency org="org.apache.hadoop" name="hadoop-tools" rev="1.0.3" conf="hadoop->default"/>
+        <dependency org="com.hadoop.gplcompression" name="hadoop-lzo" rev="0.4.15" conf="hadoop->default"/>
+    </dependencies>
+</ivy-module>

@@ -1,0 +1,7 @@
+<ivy-module version="2.0">
+    <info organisation="com.linkedin" module="whiteelephant"/>
+    <dependencies>
+        <dependency org="org.apache.avro" name="avro" rev="1.7.2"/>
+        <dependency org="com.google.guava" name="guava" rev="13.0.1"/>
+    </dependencies>
+</ivy-module>

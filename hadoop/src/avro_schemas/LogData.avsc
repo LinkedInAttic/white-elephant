@@ -1,0 +1,142 @@
+/*
+ * Copyright 2012 LinkedIn, Inc
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+{
+  "type":"record",
+  "name":"LogData",
+  "namespace": "com.linkedin.whiteelephant.parsing",
+  "fields": [
+    {"name":"path","type":[
+      "null",
+      "string"
+    ]},
+    {"name":"cluster","type":[
+      "null",
+      "string"
+    ]},
+    {"name":"entry","type":
+      [
+
+        {"type":"record",
+         "name":"Attempt",
+         "namespace": "com.linkedin.whiteelephant.parsing",
+         "fields": [
+           {"name":"jobId","type":"string"},
+           {"name":"type","type":{
+             "type":"enum","name":"TaskType","namespace":"com.linkedin.whiteelephant.parsing",
+             "symbols":["MAP","REDUCE"]
+           }},       
+           {"name":"taskId","type":"string"},
+           {"name":"taskAttemptId","type":"string"},
+           {"name":"taskStatus","type":[
+              "null",
+              {
+                "type":"enum","name":"TaskStatus","namespace":"com.linkedin.whiteelephant.parsing",
+                "symbols":["SUCCESS","FAILED","KILLED"]
+              }
+           ]},
+
+           // general timing
+           {"name":"startTime","type":["long","null"]},
+           {"name":"finishTime","type":["long","null"]},
+
+           // reduce specific timing
+           {"name":"shuffleFinished","type":["long","null"]},
+           {"name":"sortFinished","type":["long","null"]},
+
+           {"name":"counters","type":
+            {
+              "type":"map",
+              "values":"long"
+            }
+           },
+
+           {"name":"derived","type":
+            {
+              "type":"record","name":"DerivedAttemptData","namespace":"com.linkedin.whiteelephant.parsing",
+              "fields":[
+                {"name":"excess","type":["boolean","null"]},
+                {"name":"minutes","type":["double","null"]},
+                {"name":"cpuMinutes","type":["double","null"]}
+              ]
+            }
+           }
+
+          ]
+        },
+
+        {"type":"record",
+         "name":"Task",
+         "namespace": "com.linkedin.whiteelephant.parsing",
+         "fields": [
+           {"name":"jobId","type":"string"},
+           {"name":"type","type":"com.linkedin.whiteelephant.parsing.TaskType"},           
+           {"name":"taskId","type":"string"},
+
+           {"name":"taskStatus","type":[
+              "null",
+              "com.linkedin.whiteelephant.parsing.TaskStatus"
+           ]},
+
+           {"name":"startTime","type":["long","null"]},
+           {"name":"finishTime","type":["long","null"]},
+
+           {"name":"attempts","type":{
+               "type":"array",
+               "items":"com.linkedin.whiteelephant.parsing.Attempt"
+             }}
+          ]
+        },
+
+        {"type":"record",
+         "name":"Job",
+         "namespace": "com.linkedin.whiteelephant.parsing",
+         "fields": [
+           {"name":"jobId","type":"string"},
+           {"name":"user","type":["string","null"]},
+
+           {"name":"jobName","type":["string","null"]},
+           {"name":"jobQueue","type":["string","null"]},
+           {"name":"jobStatus","type":[
+              "null",
+              {
+                "type":"enum","name":"JobStatus","namespace":"com.linkedin.whiteelephant.parsing",
+                "symbols":["SUCCESS","FAILED","KILLED"]
+              }
+           ]},
+
+           {"name":"submitTime","type":["long","null"]},
+           {"name":"launchTime","type":["long","null"]},
+           {"name":"finishTime","type":["long","null"]},
+
+           {"name":"totalMaps","type":["int","null"]},
+           {"name":"totalReduces","type":["int","null"]},
+           {"name":"finishedMaps","type":["int","null"]},
+           {"name":"finishedReduces","type":["int","null"]},
+           {"name":"failedMaps","type":["int","null"]},
+           {"name":"failedReduces","type":["int","null"]},
+
+           {"name":"tasks","type":{
+               "type":"array",
+               "items":"com.linkedin.whiteelephant.parsing.Task"
+             }}
+          ]
+        }
+
+      ]
+    }
+  ]
+}

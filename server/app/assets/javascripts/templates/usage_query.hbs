@@ -1,0 +1,52 @@
+<div class="row">
+
+  <div class="usage-control">
+
+    <form class="form-inline ">
+        <label class="control-label" for="inputCluster">Cluster</label>
+        {{view Ember.Select classNames="span2"
+                            contentBinding="clusters"
+                            disabledBinding="isInProgress"
+                            optionLabelPath="content.name"
+                            optionValuePath="content.name"
+                            valueBinding="selectedCluster"}}
+
+        <label class="control-label" for="inputUnit">Granularity</label>
+        {{view Ember.Select classNames="span2"
+                            contentBinding="view.units"
+                            disabledBinding="isInProgress"
+                            optionLabelPath="content.label"
+                            optionValuePath="content.value"
+                            valueBinding="selectedUnit"}}
+        
+        <label class="control-label" for="inputType">Type</label>
+        {{view Ember.Select classNames="span2"
+                            contentBinding="view.types"
+                            disabledBinding="isInProgress"
+                            optionLabelPath="content.label"
+                            optionValuePath="content.value"
+                            valueBinding="selectedType"}}
+
+        <label class="checkbox" class="show-total">
+          {{view Ember.Checkbox classNames="show-total" 
+                                checkedBinding="showTotalChecked" 
+                                disabledBinding="isInProgress"}}
+          Show total {{test}}
+        </label>
+
+        <!--<label class="checkbox" class="show-percent">
+          <input type="checkbox" class="show-percent">Show percent</input>
+        </label>-->
+
+    </form>
+
+    <form class="form-inline">
+      <label class="control-label" for="inputCluster">User</label>
+
+      <select class="users span5" multiple="multiple">
+      </select>
+    </form>
+
+  </div>
+
+</div>

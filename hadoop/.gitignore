@@ -1,0 +1,11 @@
+/report
+/ivy
+/lib/common
+/lib/hadoop
+/lib/ivy
+/_generated
+/build
+dist/
+.bin
+src/avro_gen
+test-output/
