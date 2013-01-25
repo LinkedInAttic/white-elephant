@@ -11,7 +11,7 @@ usage_loading:
   hadoop:
 
     # Glob pattern to load usage files from HDFS.
-    file_pattern: hdfs://namenode.url.com:port/path/to/root/usage-per-hour
+    file_pattern: hdfs://namenode.url.com:port/path/to/root/usage-per-hour/*/*/*/*.avro
 
     # Directories containing JARs to be added to the classpath.
     libs:

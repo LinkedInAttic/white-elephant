@@ -9,7 +9,7 @@ To try out the server with some test data:
 
     cd server
     ant
-    ./startup
+    ./startup.sh
 
 Then visit [http://localhost:3000](http://localhost:3000).
 
@@ -36,11 +36,11 @@ The default target does several things, among them:
 
 At this point you should be able to start the server:
 
-    ./startup
+    ./startup.sh
 
 You can now visit [http://localhost:3000](http://localhost:3000).
 
-This uses trinidad to run the JRuby web app in development mode.
+This uses [trinidad](https://github.com/trinidad/trinidad) to run the JRuby web app in development mode.
 Since it is in development mode the app assumes local data should be used,
 which it looks for in the directory specified in `config.yml`.
 
@@ -56,13 +56,13 @@ When packaged as a WAR it runs in production mode and uses configuration specifi
 the assumption being that the aggregated usage data will be available there.  The following 
 parameter must be specified:
 
-* file_pattern: Glob pattern to load usage files from Hadoop
-* libs: Directories containing Hadoop JARs (to be added to the classpath)
-* conf_dir: Directory containing Hadoop configuration (to be added to the classpath)
-* principal: User name used to access secure Hadoop
-* keytab: Path to keytab file for user to access secure Hadoop
+* **file_pattern**: Glob pattern to load usage files from Hadoop
+* **libs**: Directories containing Hadoop JARs (to be added to the classpath)
+* **conf_dir**: Directory containing Hadoop configuration (to be added to the classpath)
+* **principal**: User name used to access secure Hadoop
+* **keytab**: Path to keytab file for user to access secure Hadoop
 
-White elephant does not assume a specific version of Hadoop, so the JARs are not packaged in the WAR.
+White Elephant does not assume a specific version of Hadoop, so the JARs are not packaged in the WAR.
 Therefore the path to the Hadoop JARs must be specified in the configuration.
 
 ### Deploying
@@ -71,7 +71,7 @@ To build a WAR which can be deployed to tomcat:
 
     ant war
 
-The config.yml file will be packaged with the WAR.
+The `config.yml` file will be packaged with the WAR.
 
 ## Hadoop Jobs
 
@@ -81,26 +81,50 @@ work needs to be done.
 The first job is a Hadoop log parser.  It reads log files stored in Hadoop, parses out
 relevant information, and writes the data out in an easier-to-work-with Avro format.
 
-The second job reads the Avro-fied log data and aggregates it per-hour, writing the data
+The second job reads the Avro-fied log data and aggregates it per hour, writing the data
 out in Avro format.  It essentially builds a data cube which can be easily loaded by the
-web application and queries against.
+web application into the DB and queried against.
 
 ### Configuration
 
 The configuration files are located under `hadoop/config/jobs`:
 
-* base.properties: Contains most of the configuration
-* white-elephant-full-usage.job: Job file used when processing all logs.
-* white-elephant-incremental-usage.job: Job file used when incrementally processing logs.
+* **base.properties**: Contains most of the configuration
+* **white-elephant-full-usage.job**: Job file used when processing all logs.
+* **white-elephant-incremental-usage.job**: Job file used when incrementally processing logs.
 
 The `base.properties` file consists of configuration specific to White Elephant and configuration
 specifically for Hadoop.  All Hadoop configuration parameter begin with `hadoop-conf`.
+
+To run the jobs you'll use the `run.sh` script, which requires a couple environment variables:
+
+* **HADOOP_CONF_DIR**: Hadoop configuration directory
+* **HADOOP_LIB_DIR**: Hadoop JARs directory
+
+### Hadoop Logs
+
+Within `base.properties` is a parameter `logs.root`.  This is the root path where the Hadoop logs
+are found which are to be parsed.  The parsing job assumes the logs are stored in Hadoop under daily
+directories using the following directory structure:
+
+    <logs.root>/<cluster-name>/daily/<yyyy>/<MMdd>
+
+For example, logs on January 23rd, 2013 for the production cluster may be stored in a directory
+such as:
+
+    /data/hadoop/logs/prod/daily/2013/0123
+
+Coming soon: Scripts which help you upload your Hadoop logs into Hadoop.
 
 ### Packaging
 
 To create a zip package containing all files necessary to run the jobs simply run:
 
     ant zip
+
+If you happen to be using [Azkaban](https://github.com/azkaban/azkaban) as your job scheduler
+of choice then this zip file will work as long as you add the Azkaban specific configuration 
+to `base.properties`.
 
 ### Running
 
@@ -114,10 +138,8 @@ To run the incremental job:
 
     ./run.sh white-elephant-incremental-usage.job
 
-The `run.sh` script requires a couple environment variables:
-
-* HADOOP_CONF_DIR: Hadoop configuration directory
-* HADOOP_LIB_DIR: Hadoop JARs directory
+The incremental job is more efficient as it only processes new data.  The full job reprocesses
+*everything*.
 
 ## License
 
