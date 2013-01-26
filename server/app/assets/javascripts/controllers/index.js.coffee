@@ -180,7 +180,7 @@ App.IndexController = Ember.Controller.extend(
       cluster: selected_cluster
       type: selected_type
 
-    window.location = "/api/table?" + $.param(params)
+    window.location = "api/table?" + $.param(params)
 
   incrementInProgress: ->
     count = this.get("inProgressCount")
