@@ -13,7 +13,8 @@ To try out the server with some test data:
     ant
     ./startup.sh
 
-Then visit [http://localhost:3000](http://localhost:3000).
+Then visit [http://localhost:3000](http://localhost:3000).  It may take a minute for the test data
+to load.
 
 ## Server
 
@@ -40,7 +41,8 @@ At this point you should be able to start the server:
 
     ./startup.sh
 
-You can now visit [http://localhost:3000](http://localhost:3000).
+You can now visit [http://localhost:3000](http://localhost:3000).  It may take a minute for the test data
+to load.
 
 This uses [trinidad](https://github.com/trinidad/trinidad) to run the JRuby web app in development mode.
 Since it is in development mode the app assumes local data should be used,

@@ -156,17 +156,20 @@ class UsageLoader < Java::java.lang.Thread
 
     files = prepare_files_to_process(files)
 
+    futures = []
+
     files.each do |file_name,modified_time|
       file_id = get_file_id(file_name)
       local_file_name = get_local_file(file_name)
-      executor.submit(UsageFileLoadTask.new(file_name,modified_time,local_file_name))
+      futures << executor.submit(UsageFileLoadTask.new(file_name,modified_time,local_file_name))
       files_processed += 1
     end
 
     executor.shutdown
 
-    until executor.awaitTermination(5,Java::java.util.concurrent.TimeUnit::SECONDS) do
-      puts "Waiting for local file tasks to complete"
+    until executor.awaitTermination(2,Java::java.util.concurrent.TimeUnit::SECONDS) do
+      num_finished = futures.count { |f| f.isDone }
+      puts "Loading data (#{num_finished.to_f/futures.size*100}% complete)"
     end
 
     puts "Done loading data!  That took #{(Time.now - start).to_i} seconds"

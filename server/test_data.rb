@@ -24,6 +24,14 @@ unless File.exists? core_jar
 end
 require core_jar
 
+USAGE_DIR = "data/usage"
+
+if File.directory? USAGE_DIR
+  FileUtils.rm_rf(USAGE_DIR)
+end
+
+FileUtils.mkdir_p(USAGE_DIR)
+
 java_import com.linkedin.whiteelephant.analysis.AttemptStats
 java_import com.linkedin.whiteelephant.analysis.AttemptStatsKey
 java_import com.linkedin.whiteelephant.analysis.AttemptStatsValue
@@ -45,17 +53,10 @@ def create_schema()
   schema
 end
 
-def create_writer(schema)
+def create_writer(filename,schema)
   writer = DataFileWriter.new(GenericDatumWriter.new(schema))
 
-  usage_dir = "data/usage"
-  usage_file = File.join(usage_dir,"test.avro")
-
-  if File.directory? usage_dir
-    FileUtils.rm_rf(usage_dir)
-  end
-
-  FileUtils.mkdir_p(usage_dir)
+  usage_file = File.join(USAGE_DIR,filename)
 
   writer.create(schema,Java::java.io.File.new(usage_file))
 
@@ -88,15 +89,20 @@ def positive_gaussian(mean, stddev)
 end
 
 schema = create_schema
-writer = create_writer(schema)
+writer = nil
 
 clusters = %w|dev-cluster prod-cluster|
 users = ('A'..'G').map { |l| "User-#{l}"}.to_a
 times = get_times(120) # about 4 months
 
+file_count = 1
+
+records_written = 0
+
 clusters.each do |cluster|
   users.each do |user|
     times.each do |time|
+
       status_values = [TaskStatus::SUCCESS, TaskStatus::KILLED, TaskStatus::FAILED]
       type_values = [TaskType::REDUCE, TaskType::MAP]
       excess_values = [true, false]
@@ -138,6 +144,13 @@ clusters.each do |cluster|
 
           excess_values.each do |excess|
 
+            unless writer
+              filename = "test-#{file_count}.avro"
+              file_count += 1
+              puts "Creating #{filename}"
+              writer = create_writer(filename,schema)
+            end
+
             case excess
             when false
               elapsed_minutes = (type_elapsed_minutes * excess_division)
@@ -176,6 +189,13 @@ clusters.each do |cluster|
             record.put("value",value)
 
             writer.append(record)
+
+            records_written += 1
+
+            if records_written % 50000 == 0
+              writer.close
+              writer = nil
+            end
           end
         end
       end
@@ -184,4 +204,6 @@ clusters.each do |cluster|
   end
 end
 
-writer.close
+if writer
+  writer.close
+end

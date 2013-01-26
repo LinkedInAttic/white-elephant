@@ -146,8 +146,6 @@ class UsageFileLoadTask
       batch_size = 0
     end
 
-    puts "Finished loading #{records_read} records from #{@file_name}"
-
     prep_statement.close
 
   rescue Exception => ex
