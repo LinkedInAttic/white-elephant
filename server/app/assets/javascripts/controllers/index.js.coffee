@@ -26,6 +26,9 @@ App.IndexController = Ember.Controller.extend(
   selectedType: null
   usageData: null
 
+  # figure out the user's timezone
+  selectedZone: jstz.determine().name()
+
   init: ->
     this.loadClusters()
 
@@ -89,6 +92,11 @@ App.IndexController = Ember.Controller.extend(
       console.log "Missing type"
       return
 
+    selected_zone = this.get("selectedZone")
+    unless selected_type
+      console.log "Missing zone"
+      return
+
     show_total = this.get("showTotalChecked")
 
     users_to_aggregate = []
@@ -112,6 +120,7 @@ App.IndexController = Ember.Controller.extend(
         start: date_start,
         end: date_end,
         unit: selected_unit
+        zone: selected_zone
         user: selected_users.join(",")
         users_to_aggregate: users_to_aggregate.join(",")
         cluster: selected_cluster
@@ -120,7 +129,7 @@ App.IndexController = Ember.Controller.extend(
         this.decrementInProgress()
         this.set("usageData",data)
     )
-  ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked")
+  ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked","selectedZone")
 
   incrementInProgress: ->
     count = this.get("inProgressCount")

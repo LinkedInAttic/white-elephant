@@ -38,6 +38,7 @@ post "/api/usage" do
   date_start = params[:start] || (halt 500)
   date_end = params[:end] || (halt 500)
   unit = params[:unit] || (halt 500)
+  zone = params[:zone] || (halt 500)
   users = params[:user] || (halt 500)
   users_to_aggregate = params[:users_to_aggregate] || (halt 500)
   cluster = params[:cluster] || (halt 500)
@@ -46,7 +47,8 @@ post "/api/usage" do
   time = {
     :start => date_start.to_i,
     :end => date_end.to_i,
-    :unit => unit
+    :unit => unit,
+    :zone => zone
   }
 
   users = users.split(",").uniq

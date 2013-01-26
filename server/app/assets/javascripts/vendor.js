@@ -14,3 +14,4 @@
 //= require moment.min
 //= require handlebars
 //= require ember-1.0.0-pre.4
+//= require jstz-1.0.4.min

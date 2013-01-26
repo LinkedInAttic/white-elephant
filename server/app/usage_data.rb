@@ -57,7 +57,7 @@ class UsageData
 
       # when querying time this affects how it is aggregated
       time_unit = time[:unit]
-      time_zone = 'America/Los_Angeles' # TODO
+      time_zone = time[:zone]
 
       cube = cache_query_by_time(what,where,measures_to_query,time_unit,time_zone)
 
@@ -106,7 +106,7 @@ class UsageData
 
       # when querying time this affects how it is aggregated
       time_unit = time[:unit]
-      time_zone = 'America/Los_Angeles' # TODO
+      time_zone = time[:zone]
 
       cube = cache_query_by_time(what,where,measures_to_query,time_unit,time_zone)
 
