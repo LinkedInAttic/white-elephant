@@ -92,7 +92,7 @@ class UsageHadoopLoader < UsageLoader
   end
 
   def get_local_file(file_name)
-    temp_file = Java::java.io.File.createTempFile("we","usage").to_s
+    temp_file = Java::java.io.File.createTempFile("whiteelephant","usage").to_s
     @fs.copyToLocalFile(Path.new(file_name),Path.new(temp_file))
     temp_file
   end
