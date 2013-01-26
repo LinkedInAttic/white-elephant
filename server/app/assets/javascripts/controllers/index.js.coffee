@@ -115,7 +115,7 @@ App.IndexController = Ember.Controller.extend(
     this.incrementInProgress()
     $.ajax(
       url: "api/usage"
-      type: "POST"
+      type: "GET"
       data:
         start: date_start,
         end: date_end,
@@ -130,6 +130,57 @@ App.IndexController = Ember.Controller.extend(
         this.set("usageData",data)
     )
   ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked","selectedZone")
+
+  exportCSV: ->
+    console.log "Exporting CSV"
+
+    date_end = new Date().getTime()
+
+    secs_in_hour = 3600
+    secs_in_day = secs_in_hour*24
+    ms_in_day = 1000*secs_in_day
+    date_start = date_end - 300*ms_in_day
+
+    selected_unit = this.get("selectedUnit")
+    unless selected_unit
+      console.log "Missing unit"
+      return
+
+    users = this.get("users")
+    unless users
+      console.log "Missing users"
+      return
+
+    selected_users = this.get("selectedUsers")
+    unless selected_users
+      console.log "Missing selected users"
+      return
+
+    selected_cluster = this.get("selectedCluster")
+    unless selected_cluster
+      console.log "Missing selected cluster"
+      return
+
+    selected_type = this.get("selectedType")
+    unless selected_type
+      console.log "Missing type"
+      return
+
+    selected_zone = this.get("selectedZone")
+    unless selected_type
+      console.log "Missing zone"
+      return
+
+    params = 
+      start: date_start,
+      end: date_end,
+      unit: selected_unit
+      zone: selected_zone
+      user: selected_users.join(",")
+      cluster: selected_cluster
+      type: selected_type
+
+    window.location = "/api/table?" + $.param(params)
 
   incrementInProgress: ->
     count = this.get("inProgressCount")

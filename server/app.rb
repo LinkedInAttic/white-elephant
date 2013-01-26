@@ -32,7 +32,7 @@ get "/api/clusters" do
   UsageData.fetch_clusters.to_json
 end
 
-post "/api/usage" do
+get "/api/usage" do
   content_type :json
 
   date_start = params[:start] || (halt 500)
@@ -81,4 +81,53 @@ post "/api/usage" do
   return_val[:cluster] = cluster
 
   return_val.to_json
+end
+
+get "/api/table" do
+
+  headers "Content-Disposition" => "attachment;filename=table.csv",
+          "Content-Type" => "application/octet-stream"
+
+  date_start = params[:start] || (halt 500)
+  date_end = params[:end] || (halt 500)
+  unit = params[:unit] || (halt 500)
+  zone = params[:zone] || (halt 500)
+  users = params[:user] || (halt 500)
+  cluster = params[:cluster] || (halt 500)
+  type = (params[:type] && params[:type].to_sym) || (halt 500)
+
+  time = {
+    :start => date_start.to_i,
+    :end => date_end.to_i,
+    :unit => unit,
+    :zone => zone
+  }
+
+  users = users.split(",").uniq
+
+  return_val = {}
+
+  result = UsageData.fetch_per_user_data(cluster,users,time,type)
+
+  return_val = ""
+
+  return_val << %w|time|.concat(users).join(",") << "\n"
+
+  user_data = {}
+  result[:users].each do |data|
+    user_data[data[:user]] = data[:data]
+  end
+
+  tz = TZInfo::Timezone.get(zone)
+
+  i = 0
+  result[:times].each do |time|
+    local_time = tz.utc_to_local(Time.at(time/1000).getutc)
+    return_val << local_time.strftime("%Y-%m-%d") << ","
+    # convert minutes to hours
+    return_val << users.map { |user| (user_data[user][i]/60.0).to_s }.join(",") << "\n"
+    i += 1
+  end
+
+  return_val
 end
