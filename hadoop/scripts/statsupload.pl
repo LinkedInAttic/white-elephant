@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# Hadoop log uploader
+# authors: Allen Wittenauer, Adam Faris
+
 use warnings;
 use strict;
 use File::Find     ();
