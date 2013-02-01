@@ -77,6 +77,11 @@ To build a WAR which can be deployed to tomcat:
 
 The `config.yml` file will be packaged with the WAR.
 
+## Hadoop Log Uploading
+
+The script `hadoop/scripts/statsupload.pl` can be used to upload the Hadoop logs to HDFS
+so they can be processed.  Check its documentation for details.
+
 ## Hadoop Jobs
 
 There are two Hadoop jobs, both managed by a job executor which keeps track of what
