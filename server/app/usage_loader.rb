@@ -24,14 +24,25 @@ class UsageLoader < Java::java.lang.Thread
   end
 
   def run
+    refresh_in_ms = begin
+      mins = @config["usage_loading"]["refresh_in_mins"]
+      (mins*60*1000).to_i
+    end
     loop do
-      before_load
-      load_avro_files
-      after_load
+      begin
+        puts "Loading avro data"
+        before_load
+        load_avro_files
+        after_load
 
-      refresh_in_mins = @config["usage_loading"]["refresh_in_mins"]
-
-      Java::java.lang.Thread.sleep((refresh_in_mins*60*1000).to_i)
+      # prevent known exception from killing our thread
+      rescue Java::java.io.IOException => ioe
+        puts ioe.to_s
+      
+      ensure 
+        puts "Waiting #{refresh_in_ms} ms before next refresh"
+        Java::java.lang.Thread.sleep(refresh_in_ms)
+      end
     end
   end
 
@@ -144,11 +155,7 @@ class UsageLoader < Java::java.lang.Thread
   end
 
   def load_avro_files    
-    executor = Java::java.util.concurrent.Executors.newFixedThreadPool(4)
-
     start = Time.now
-
-    files_processed = 0
 
     files = list_files
 
@@ -156,29 +163,31 @@ class UsageLoader < Java::java.lang.Thread
 
     files = prepare_files_to_process(files)
 
-    futures = []
+    if files.size > 0
+      puts "Found #{files.size} files to process"
 
-    files.each do |file_name,modified_time|
-      file_id = get_file_id(file_name)
-      local_file_name = get_local_file(file_name)
-      futures << executor.submit(UsageFileLoadTask.new(file_name,modified_time,local_file_name))
-      files_processed += 1
-    end
+      executor = Java::java.util.concurrent.Executors.newFixedThreadPool(4)
 
-    executor.shutdown
+      futures = []
 
-    until executor.awaitTermination(2,Java::java.util.concurrent.TimeUnit::SECONDS) do
-      num_finished = futures.count { |f| f.isDone }
-      puts "Loading data (#{num_finished.to_f/futures.size*100}% complete)"
-    end
+      files.each do |file_name,modified_time|
+        file_id = get_file_id(file_name)
+        local_file_name = get_local_file(file_name)
+        futures << executor.submit(UsageFileLoadTask.new(file_name,modified_time,local_file_name))
+      end
 
-    puts "Done loading data!  That took #{(Time.now - start).to_i} seconds"
+      executor.shutdown
 
-    if files_processed > 0
+      until executor.awaitTermination(2,Java::java.util.concurrent.TimeUnit::SECONDS) do
+        num_finished = futures.count { |f| f.isDone }
+        puts "Loading data (#{num_finished.to_f/futures.size*100}% complete)"
+      end
+
+      puts "Done loading data!  That took #{(Time.now - start).to_i} seconds"
       puts "Invalidating the usage data cache"
       UsageData.clear_cache
     else
-      puts "No new files processed"
+      puts "No files to process"
     end
 
   rescue Exception => ex
