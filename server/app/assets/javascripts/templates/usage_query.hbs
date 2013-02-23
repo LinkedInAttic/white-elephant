@@ -27,17 +27,13 @@
                             optionValuePath="content.value"
                             valueBinding="selectedType"}}
 
-        <label class="checkbox" class="show-total">
-          {{view Ember.Checkbox classNames="show-total" 
-                                checkedBinding="showTotalChecked" 
-                                disabledBinding="isInProgress"}}
-          Show total {{test}}
-        </label>
-
-        <!--<label class="checkbox" class="show-percent">
-          <input type="checkbox" class="show-percent">Show percent</input>
-        </label>-->
-
+        <label class="control-label" for="inputType">Time zone:</label>
+        {{view Ember.Select classNames="span3"
+                            contentBinding="timeZones"
+                            disabledBinding="isInProgress"
+                            optionLabelPath="content.name"
+                            optionValuePath="content.name"
+                            valueBinding="selectedZone"}}
     </form>
 
     <form class="form-inline">
@@ -45,6 +41,40 @@
 
       <select class="users span5" multiple="multiple">
       </select>
+
+      <label class="control-label" for="inputType">Max to graph:</label>
+        {{view Ember.TextField classNames="span2" valueBinding="maxUsersToGraph"}}
+
+      <label class="checkbox" class="show-total">
+        {{view Ember.Checkbox classNames="show-total" 
+                              checkedBinding="showTotalChecked" 
+                              disabledBinding="isInProgress"}}
+        Aggregate remaining
+      </label>
+    </form>
+
+    <form class="form-inline">
+      <label class="control-label" for="inputCluster">X Axis</label>
+
+      <label class="control-label" for="inputCluster">Duration:</label>
+      {{view Ember.TextField classNames="span1" valueBinding="durationValue"}}
+      {{view Ember.Select classNames="span2"
+                            contentBinding="durationUnits"
+                            disabledBinding="isInProgress"
+                            optionLabelPath="content.name"
+                            optionValuePath="content.name"
+                            valueBinding="durationUnit"}}
+
+    </form>
+
+    <form class="form-inline">
+      <label class="control-label" for="inputCluster">Y Axis</label>
+
+      <label class="control-label" for="inputType">Min:</label>
+        {{view Ember.TextField classNames="span2" placeholder="auto" valueBinding="chart_min"}}
+
+      <label class="control-label" for="inputType">Max:</label>
+        {{view Ember.TextField classNames="span2" placeholder="auto" valueBinding="chart_max"}}
     </form>
 
   </div>

@@ -30,12 +30,26 @@ App.GraphView = Em.View.extend(
       console.log "No series"
       return
 
+    chart_max = this.get('controller').get('chart_max')
+    chart_min = this.get('controller').get('chart_min')
+
+    if chart_max
+      chart_max = parseInt(chart_max)
+
+    if chart_min
+      chart_min = parseInt(chart_min)
+
+    chart_min = null unless chart_min >= 0
+    chart_max = null unless chart_max > 0
+
     graph = new Rickshaw.Graph(
         element: document.querySelector("#chart3")
         renderer: 'area'
         stroke: true
         width: 1000
         height: 400
+        max: chart_max
+        min: chart_min
         series: series                 
     );
          
@@ -82,7 +96,7 @@ App.GraphView = Em.View.extend(
       graph: graph
       xFormatter: (x) -> new Date(x*1000).toDateString()
     );
-  ).observes("series")
+  ).observes("series","controller.chart_max","controller.chart_min")
 
   series: (->
     console.log "Getting series"
@@ -98,7 +112,7 @@ App.GraphView = Em.View.extend(
       console.log "Missing usage data"
       return
 
-    unless data.times
+    unless data.times and data.times.length > 0
       console.log "No times"
       return
 
@@ -111,7 +125,7 @@ App.GraphView = Em.View.extend(
     users = data.users.slice(0,data.users.length)
 
     other_name = null
-    max_graph = 10
+    max_graph = this.get('controller').get('maxUsersToGraph')
 
     _(users).each((user) ->
       user.total = _(user.data).reduce((memo,d) ->
@@ -199,5 +213,5 @@ App.GraphView = Em.View.extend(
     series.reverse()
 
     series
-  ).property("controller.usageData")
+  ).property("controller.usageData","controller.maxUsersToGraph")
 )

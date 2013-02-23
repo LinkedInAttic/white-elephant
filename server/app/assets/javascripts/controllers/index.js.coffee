@@ -17,20 +17,46 @@ App = window.App
 App.IndexController = Ember.Controller.extend(
 
   inProgressCount: 0
-  showTotalChecked: true
+  showTotalChecked: false
   clusters: []
   selectedCluster: null
   users: []
+  timeZones: []
   selectedUsers: []
   selectedUnit: null
   selectedType: null
   usageData: null
+  selectedZone: null
+  durationValue: 3
+  durationUnit: 'months'
+  durationUnits: []
+  maxUsersToGraph: 10
 
-  # figure out the user's timezone
-  selectedZone: jstz.determine().name()
+  chart_max: null
+  chart_min: null
 
   init: ->
     this.loadClusters()
+
+    detected_zone = jstz.determine().name()
+
+    this.set('selectedZone', detected_zone)
+
+    this.timeZones.push {
+      name: detected_zone
+    }
+
+    this.durationUnits.push {
+      name: 'days'
+    }
+
+    this.durationUnits.push {
+      name: 'weeks'
+    }
+
+    this.durationUnits.push {
+      name: 'months'
+    }
 
   loadClusters: ->
     console.log "Loading clusters"
@@ -62,10 +88,14 @@ App.IndexController = Ember.Controller.extend(
     # end with current time (in ms)
     date_end = new Date().getTime()
 
-    secs_in_hour = 3600
-    secs_in_day = secs_in_hour*24
-    ms_in_day = 1000*secs_in_day
-    date_start = date_end - 300*ms_in_day
+    duration_value = this.get('durationValue')
+    duration_unit = this.get('durationUnit')
+
+    end = moment()
+    start = moment(end).subtract(duration_unit, duration_value)
+
+    end_time = end.toDate().getTime()
+    start_time = start.toDate().getTime()
 
     selected_unit = this.get("selectedUnit")
     unless selected_unit
@@ -117,8 +147,8 @@ App.IndexController = Ember.Controller.extend(
       url: "api/usage"
       type: "GET"
       data:
-        start: date_start,
-        end: date_end,
+        start: start_time,
+        end: end_time,
         unit: selected_unit
         zone: selected_zone
         user: selected_users.join(",")
@@ -129,17 +159,19 @@ App.IndexController = Ember.Controller.extend(
         this.decrementInProgress()
         this.set("usageData",data)
     )
-  ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked","selectedZone")
+  ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked","selectedZone","durationUnit","durationValue")
 
   exportCSV: ->
     console.log "Exporting CSV"
 
-    date_end = new Date().getTime()
+    duration_value = this.get('durationValue')
+    duration_unit = this.get('durationUnit')
 
-    secs_in_hour = 3600
-    secs_in_day = secs_in_hour*24
-    ms_in_day = 1000*secs_in_day
-    date_start = date_end - 300*ms_in_day
+    end = moment()
+    start = moment(end).subtract(duration_unit, duration_value)
+
+    end_time = end.toDate().getTime()
+    start_time = start.toDate().getTime()
 
     selected_unit = this.get("selectedUnit")
     unless selected_unit
@@ -172,8 +204,8 @@ App.IndexController = Ember.Controller.extend(
       return
 
     params = 
-      start: date_start,
-      end: date_end,
+      start: start_time,
+      end: end_time,
       unit: selected_unit
       zone: selected_zone
       user: selected_users.join(",")
