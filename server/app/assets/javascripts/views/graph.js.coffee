@@ -96,24 +96,25 @@ App.GraphView = Em.View.extend(
     yAxis.render();
 
     # TODO very hacky, find a cleaner way to do this
-    d3.select("#y_axis svg")
-      .attr("style","position: relative; top: -40px; left:-40px; ")
-      .attr("width","80")
-    d3.select("#y_axis svg g")
-      .attr("transform","translate(80, 40)")
-    d3.select("#y_axis svg g")
-      .append("g")
-        .attr("style","opacity: 1; ")
-        .attr("transform", "translate(0,200)")
-        .append("g")
-          .attr("class","tick")
-          .attr("transform","rotate(-90) translate(0,-60)")
-          .append("text")
-            .attr("x", -7)
-            .attr("y", 0)
-            .attr("dy", "1em")    
-            .attr("text-anchor", "middle")      
-            .text(y_label);
+    # Disabling because layout shifted when hovering on legend.
+    # d3.select("#y_axis svg")
+    #   .attr("style","position: relative; top: -40px; left:-40px; ")
+    #   .attr("width","80")
+    # d3.select("#y_axis svg g")
+    #   .attr("transform","translate(80, 40)")
+    # d3.select("#y_axis svg g")
+    #   .append("g")
+    #     .attr("style","opacity: 1; ")
+    #     .attr("transform", "translate(0,200)")
+    #     .append("g")
+    #       .attr("class","tick")
+    #       .attr("transform","rotate(-90) translate(0,-60)")
+    #       .append("text")
+    #         .attr("x", -7)
+    #         .attr("y", 0)
+    #         .attr("dy", "1em")    
+    #         .attr("text-anchor", "middle")      
+    #         .text(y_label);
 
     hoverDetail = new Rickshaw.Graph.HoverDetail(
       graph: graph
