@@ -1185,7 +1185,7 @@ Rickshaw.Graph.Axis.Time = function(args) {
 	this.ticksTreatment = args.ticksTreatment || 'plain';
 	this.fixedTimeUnit = args.timeUnit;
 
-	var time = new Rickshaw.Fixtures.Time();
+	var time = args.timeFixture || (new Rickshaw.Fixtures.Time());
 
 	this.appropriateTimeUnit = function() {
 
