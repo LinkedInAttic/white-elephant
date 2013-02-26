@@ -18,7 +18,7 @@ App.TableView = Em.View.extend(
   templateName: "table"
 
   renderTable: (->
-    console.log "Rendering table"
+    console?.log "Rendering table"
 
     $table = $("#table")
     $table.html('')
@@ -26,7 +26,7 @@ App.TableView = Em.View.extend(
     data = this.get("data")
 
     unless data
-      console.log "No data"
+      console?.log "No data"
       return
 
     if data.users.length > 0
@@ -71,15 +71,15 @@ App.TableView = Em.View.extend(
 
       $("#pager").show()
     else
-      console.log "Table will not be shown, no users selected"
+      console?.log "Table will not be shown, no users selected"
       $("#pager").hide()
 
-    console.log "Rendered table"
+    console?.log "Rendered table"
 
   ).observes("data")
 
   data: (->
-    console.log "Getting data"
+    console?.log "Getting data"
 
     result = {}
 
@@ -87,15 +87,15 @@ App.TableView = Em.View.extend(
     type = this.get("controller").get("selectedType")
 
     unless data
-      console.log "Missing usage data"
+      console?.log "Missing usage data"
       return
 
     unless data.times
-      console.log "No times"
+      console?.log "No times"
       return
 
     unless data.users
-      console.log "No users"
+      console?.log "No users"
       return
 
     unit = this.get("controller").get("selectedUnit")
@@ -110,18 +110,18 @@ App.TableView = Em.View.extend(
         when "MONTHS"
           times.push(moment(time).format("MMMM"))
         else
-          console.log "Unexpected: #{unit}"
+          console?.log "Unexpected: #{unit}"
           return
     )
 
     result.times = times
 
     unless data
-      console.log "Missing usage data"
+      console?.log "Missing usage data"
       return
 
     unless type
-      console.log "Missing type"
+      console?.log "Missing type"
       return
 
     is_minutes = switch type
@@ -155,7 +155,7 @@ App.TableView = Em.View.extend(
 
     result.users = final_users
 
-    console.log "Got data"
+    console?.log "Got data"
 
     result
   ).property("controller.usageData")

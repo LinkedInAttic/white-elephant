@@ -59,7 +59,7 @@ App.IndexController = Ember.Controller.extend(
     }
 
   loadClusters: ->
-    console.log "Loading clusters"
+    console?.log "Loading clusters"
     this.incrementInProgress()
     $.get('api/clusters',(data,status) =>
       this.decrementInProgress()
@@ -72,7 +72,7 @@ App.IndexController = Ember.Controller.extend(
   loadUsers: (->
     cluster = this.get("selectedCluster")
     if cluster
-      console.log "Loading users for #{cluster}"
+      console?.log "Loading users for #{cluster}"
       this.incrementInProgress()
       $.get('api/users',{cluster:cluster},(data,status) =>
         this.decrementInProgress()
@@ -99,32 +99,32 @@ App.IndexController = Ember.Controller.extend(
 
     selected_unit = this.get("selectedUnit")
     unless selected_unit
-      console.log "Missing unit"
+      console?.log "Missing unit"
       return
 
     users = this.get("users")
     unless users
-      console.log "Missing users"
+      console?.log "Missing users"
       return
 
     selected_users = this.get("selectedUsers")
     unless selected_users
-      console.log "Missing selected users"
+      console?.log "Missing selected users"
       return
 
     selected_cluster = this.get("selectedCluster")
     unless selected_cluster
-      console.log "Missing selected cluster"
+      console?.log "Missing selected cluster"
       return
 
     selected_type = this.get("selectedType")
     unless selected_type
-      console.log "Missing type"
+      console?.log "Missing type"
       return
 
     selected_zone = this.get("selectedZone")
     unless selected_type
-      console.log "Missing zone"
+      console?.log "Missing zone"
       return
 
     show_total = this.get("showTotalChecked")
@@ -140,7 +140,7 @@ App.IndexController = Ember.Controller.extend(
           users_to_aggregate.push user.name          
       )
 
-    console.log "Loading usage data"
+    console?.log "Loading usage data"
 
     this.incrementInProgress()
     $.ajax(
@@ -162,7 +162,7 @@ App.IndexController = Ember.Controller.extend(
   ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked","selectedZone","durationUnit","durationValue")
 
   exportCSV: ->
-    console.log "Exporting CSV"
+    console?.log "Exporting CSV"
 
     duration_value = this.get('durationValue')
     duration_unit = this.get('durationUnit')
@@ -175,32 +175,32 @@ App.IndexController = Ember.Controller.extend(
 
     selected_unit = this.get("selectedUnit")
     unless selected_unit
-      console.log "Missing unit"
+      console?.log "Missing unit"
       return
 
     users = this.get("users")
     unless users
-      console.log "Missing users"
+      console?.log "Missing users"
       return
 
     selected_users = this.get("selectedUsers")
     unless selected_users
-      console.log "Missing selected users"
+      console?.log "Missing selected users"
       return
 
     selected_cluster = this.get("selectedCluster")
     unless selected_cluster
-      console.log "Missing selected cluster"
+      console?.log "Missing selected cluster"
       return
 
     selected_type = this.get("selectedType")
     unless selected_type
-      console.log "Missing type"
+      console?.log "Missing type"
       return
 
     selected_zone = this.get("selectedZone")
     unless selected_type
-      console.log "Missing zone"
+      console?.log "Missing zone"
       return
 
     params = 

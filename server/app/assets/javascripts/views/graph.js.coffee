@@ -17,8 +17,10 @@ App = window.App
 App.GraphView = Em.View.extend(
   templateName: "graph"
 
+  y_label: null
+
   renderGraph: (->
-    console.log "Rendering graph"
+    console?.log "Rendering graph"
 
     $("#chart3").html('')
     $("#legend").html('')
@@ -27,11 +29,12 @@ App.GraphView = Em.View.extend(
     series = this.get("series")
 
     unless series
-      console.log "No series"
+      console?.log "No series"
       return
 
     chart_max = this.get('controller').get('chart_max')
     chart_min = this.get('controller').get('chart_min')
+    y_label = this.get('y_label')
 
     if chart_max
       chart_max = parseInt(chart_max)
@@ -92,6 +95,26 @@ App.GraphView = Em.View.extend(
 
     yAxis.render();
 
+    # TODO very hacky, find a cleaner way to do this
+    d3.select("#y_axis svg")
+      .attr("style","position: relative; top: -40px; left:-40px; ")
+      .attr("width","80")
+    d3.select("#y_axis svg g")
+      .attr("transform","translate(80, 40)")
+    d3.select("#y_axis svg g")
+      .append("g")
+        .attr("style","opacity: 1; ")
+        .attr("transform", "translate(0,200)")
+        .append("g")
+          .attr("class","tick")
+          .attr("transform","rotate(-90) translate(0,-60)")
+          .append("text")
+            .attr("x", -7)
+            .attr("y", 0)
+            .attr("dy", "1em")    
+            .attr("text-anchor", "middle")      
+            .text(y_label);
+
     hoverDetail = new Rickshaw.Graph.HoverDetail(
       graph: graph
       xFormatter: (x) -> new Date(x*1000).toDateString()
@@ -99,7 +122,7 @@ App.GraphView = Em.View.extend(
   ).observes("series","controller.chart_max","controller.chart_min")
 
   series: (->
-    console.log "Getting series"
+    console?.log "Getting series"
 
     series = []
 
@@ -109,17 +132,20 @@ App.GraphView = Em.View.extend(
     type = controller.get("selectedType")
 
     unless data
-      console.log "Missing usage data"
+      console?.log "Missing usage data"
       return
 
     unless data.times and data.times.length > 0
-      console.log "No times"
+      console?.log "No times"
       return
 
     is_minutes = switch type
       when "cpuTotal", "minutesTotal", "minutesReduce", "minutesMap", "minutesExcessTotal", "minutesExcessReduce", "minutesExcessMap", "minutesSuccess", "minutesFailed", "minutesKilled"
         true
       else false
+
+    y_label = $(".usage-control .types option[value='#{type}']").text()      
+    this.set("y_label",y_label)
 
     times = data.times
     users = data.users.slice(0,data.users.length)
@@ -138,17 +164,17 @@ App.GraphView = Em.View.extend(
 
     # aggregate user data when there are too many to graph
     if users.length > max_graph
-      console.log "Got #{users.length} users, must truncate to #{max_graph}"
+      console?.log "Got #{users.length} users, must truncate to #{max_graph}"
 
       # assume heaviest users are first, only take the first n
       users_to_aggregate = users.splice(max_graph,users.length-max_graph)
 
-      console.log "Aggregating #{users_to_aggregate.length} users"
+      console?.log "Aggregating #{users_to_aggregate.length} users"
       num_aggregated_users = users_to_aggregate.length
 
       # if we already have some aggregated data from the server let's add this in as well
       if data.users_aggregated and data.num_aggregated_users > 0
-        console.log "Including #{data.num_aggregated_users} already aggregated users in total aggregate"
+        console?.log "Including #{data.num_aggregated_users} already aggregated users in total aggregate"
         num_aggregated_users += data.num_aggregated_users
         users_to_aggregate.unshift(
           data: data.users_aggregated

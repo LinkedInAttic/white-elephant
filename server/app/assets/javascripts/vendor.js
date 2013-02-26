@@ -8,8 +8,7 @@
 //= require jquery.tablesorter
 //= require jquery.tablesorter.pager
 //= require json2
-//= require d3.min
-//= require d3.layout.min
+//= require d3.v3.min
 //= require rickshaw.min
 //= require moment.min
 //= require handlebars
