@@ -91,6 +91,7 @@ App.GraphView = Em.View.extend(
       orientation: 'left'
       tickFormat: Rickshaw.Fixtures.Number.formatKMBT
       element: document.getElementById('y_axis')
+      label: y_label
     );
 
     yAxis.render();
