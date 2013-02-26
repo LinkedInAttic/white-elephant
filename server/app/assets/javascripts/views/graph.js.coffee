@@ -58,10 +58,9 @@ App.GraphView = Em.View.extend(
          
     timeFixture = new Rickshaw.Fixtures.LocalTime()
 
-    xAxis = new Rickshaw.Graph.Axis.LocalTime(
+    xAxis = new Rickshaw.Graph.Axis.Time(
       graph: graph
       timeFixture: timeFixture
-      # timeUnit: timeFixture.unit('week')
     );
 
     graph.render();
