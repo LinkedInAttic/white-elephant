@@ -1618,10 +1618,8 @@ Rickshaw.Graph.Behavior.Series.Toggle = function(args) {
 		anchor.onclick = function(e) {
 			if (line.series.disabled) {
 				line.series.enable();
-				line.element.classList.remove('disabled');
 			} else { 
 				line.series.disable();
-				line.element.classList.add('disabled');
 			}
 		}
 		
@@ -1696,25 +1694,52 @@ Rickshaw.Graph.Behavior.Series.Toggle = function(args) {
 
 	this._addBehavior = function() {
 
-		this.graph.series.forEach( function(s) {
-			
-			s.disable = function() {
+		this.legend.lines.forEach( function(l) {
+			var s = l.series;
+			var el = l.element;
 
+			s.disable = function() {
 				if (self.graph.series.length <= 1) {
 					throw('only one series left');
 				}
-				
+
+				el.classList.add('disabled');
+
 				s.disabled = true;
 				self.graph.update();
 			};
 
 			s.enable = function() {
+				el.classList.remove('disabled');
 				s.disabled = false;
 				self.graph.update();
-			};
-		} );
+				};
+		});
 	};
+
+	this._initializeDisabled = function() {
+		var needUpdate = false;
+
+		this.legend.lines.forEach( function(l) {
+			if (l.series.disabled)
+			{
+				l.element.classList.add('disabled');
+				needUpdate = true;
+			}
+			else
+			{
+				l.element.classList.remove('disabled');
+			}
+		});
+
+		if (needUpdate)
+		{
+			self.graph.update();
+		}
+	};
+
 	this._addBehavior();
+	this._initializeDisabled();
 
 	this.updateBehaviour = function () { this._addBehavior() };
 
