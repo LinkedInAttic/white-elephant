@@ -17,8 +17,6 @@ App = window.App
 App.GraphView = Em.View.extend(
   templateName: "graph"
 
-  y_label: null
-
   renderGraph: (->
     console?.log "Rendering graph"
 
@@ -31,6 +29,13 @@ App.GraphView = Em.View.extend(
     unless series
       console?.log "No series"
       return
+
+    if series.length == 0
+      console?.log "Series is empty"
+      $("#chart-container").hide()
+      return
+
+    $("#chart-container").show()
 
     chart_max = this.get('controller').get('chart_max')
     chart_min = this.get('controller').get('chart_min')
@@ -62,6 +67,11 @@ App.GraphView = Em.View.extend(
       graph: graph
       timeFixture: timeFixture
     );
+
+    slider = new Rickshaw.Graph.RangeSlider({
+      graph: graph,
+      element: $('#slider')
+    });
 
     graph.render();
 
@@ -95,32 +105,25 @@ App.GraphView = Em.View.extend(
 
     yAxis.render();
 
-    # TODO very hacky, find a cleaner way to do this
-    # Disabling because layout shifted when hovering on legend.
-    # d3.select("#y_axis svg")
-    #   .attr("style","position: relative; top: -40px; left:-40px; ")
-    #   .attr("width","80")
-    # d3.select("#y_axis svg g")
-    #   .attr("transform","translate(80, 40)")
-    # d3.select("#y_axis svg g")
-    #   .append("g")
-    #     .attr("style","opacity: 1; ")
-    #     .attr("transform", "translate(0,200)")
-    #     .append("g")
-    #       .attr("class","tick")
-    #       .attr("transform","rotate(-90) translate(0,-60)")
-    #       .append("text")
-    #         .attr("x", -7)
-    #         .attr("y", 0)
-    #         .attr("dy", "1em")    
-    #         .attr("text-anchor", "middle")      
-    #         .text(y_label);
-
     hoverDetail = new Rickshaw.Graph.HoverDetail(
       graph: graph
       xFormatter: (x) -> new Date(x*1000).toDateString()
     );
   ).observes("series","controller.chart_max","controller.chart_min")
+  
+  y_label: (->
+    type = this.get("controller").get("selectedType")
+
+    result = switch type
+      when "cpuTotal", "minutesTotal", "minutesReduce", "minutesMap", "minutesExcessTotal", "minutesExcessReduce", "minutesExcessMap", "minutesSuccess", "minutesFailed", "minutesKilled"
+        "Hours"
+      when "totalStarted", "mapStarted", "reduceStarted", "successFinished", "failedFinished", "killedFinished"
+        "Tasks"
+      when "reduceShuffleBytes"
+        "Bytes"
+
+    result
+  ).property("controller.selectedType")
 
   series: (->
     console?.log "Getting series"
@@ -145,11 +148,12 @@ App.GraphView = Em.View.extend(
         true
       else false
 
-    y_label = $(".usage-control .types option[value='#{type}']").text()      
-    this.set("y_label",y_label)
-
     times = data.times
     users = data.users.slice(0,data.users.length)
+
+    if users.length == 0
+      console.log "no users"
+      return series
 
     other_name = null
     max_graph = this.get('controller').get('maxUsersToGraph')
@@ -163,23 +167,24 @@ App.GraphView = Em.View.extend(
     # sort so heaviest users are first
     users = _(users).sortBy((user) -> -user.total)
 
-    # aggregate user data when there are too many to graph
-    if users.length > max_graph
-      console?.log "Got #{users.length} users, must truncate to #{max_graph}"
+    aggregate_selected = this.get("controller").get("aggregateSelectedChecked")
 
-      # assume heaviest users are first, only take the first n
-      users_to_aggregate = users.splice(max_graph,users.length-max_graph)
+    console.log "aggregate_selected: #{aggregate_selected}"
+
+    # aggregate user data when there are too many to graph
+    if (aggregate_selected and users.length > 0) || users.length > max_graph
+
+      if aggregate_selected and users.length > 0
+        users_to_aggregate = users
+        users = []
+      else
+        console?.log "Got #{users.length} users, must truncate to #{max_graph}"
+
+        # assume heaviest users are first, only take the first n
+        users_to_aggregate = users.splice(max_graph,users.length-max_graph)
 
       console?.log "Aggregating #{users_to_aggregate.length} users"
       num_aggregated_users = users_to_aggregate.length
-
-      # if we already have some aggregated data from the server let's add this in as well
-      if data.users_aggregated and data.num_aggregated_users > 0
-        console?.log "Including #{data.num_aggregated_users} already aggregated users in total aggregate"
-        num_aggregated_users += data.num_aggregated_users
-        users_to_aggregate.unshift(
-          data: data.users_aggregated
-        )
 
       aggregated_data = []
 
@@ -192,19 +197,26 @@ App.GraphView = Em.View.extend(
         )
       )
 
-      other_name = "#{num_aggregated_users} more users"
+      other_name = "#{num_aggregated_users} users"
 
-      users.unshift(
+      users.push(
         user: other_name
         data: aggregated_data
+        disabled :false
       )
-    else if data.users_aggregated and data.num_aggregated_users > 0
+
+    if data.users_aggregated and data.num_aggregated_users > 0
+      should_disable = users.length > 0
       num_aggregated_users = data.num_aggregated_users
       aggregated_data = data.users_aggregated
-      other_name = "#{num_aggregated_users} users"
-      users.unshift(
+      other_name = if users.length > 0
+        "#{num_aggregated_users} more users"
+      else
+        "#{num_aggregated_users} users"
+      users.push(
         user: other_name
         data: aggregated_data
+        disabled: should_disable
       )
 
     palette = new Rickshaw.Color.Palette(
@@ -234,11 +246,12 @@ App.GraphView = Em.View.extend(
         color: palette.color()
         name: user_data.user
         data: series_data
+        disabled: user_data.disabled
       )
     )
 
     series.reverse()
 
     series
-  ).property("controller.usageData","controller.maxUsersToGraph")
+  ).property("controller.usageData","controller.maxUsersToGraph","controller.aggregateSelectedChecked")
 )

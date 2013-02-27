@@ -3,7 +3,7 @@
   <div class="usage-control">
 
     <form class="form-inline ">
-        <label class="control-label" for="inputCluster">Cluster</label>
+        <label class="control-label" for="inputCluster">Cluster:</label>
         {{view Ember.Select classNames="span2"
                             contentBinding="clusters"
                             disabledBinding="isInProgress"
@@ -11,7 +11,7 @@
                             optionValuePath="content.name"
                             valueBinding="selectedCluster"}}
 
-        <label class="control-label" for="inputUnit">Granularity</label>
+        <label class="control-label" for="inputUnit">Granularity:</label>
         {{view Ember.Select classNames="span2"
                             contentBinding="view.units"
                             disabledBinding="isInProgress"
@@ -19,7 +19,7 @@
                             optionValuePath="content.value"
                             valueBinding="selectedUnit"}}
         
-        <label class="control-label" for="inputType">Type</label>
+        <label class="control-label" for="inputType">Type:</label>
         {{view Ember.Select classNames="span2 types"
                             contentBinding="view.types"
                             disabledBinding="isInProgress"
@@ -37,26 +37,19 @@
     </form>
 
     <form class="form-inline">
-      <label class="control-label" for="inputCluster">User</label>
+      <label class="control-label" for="inputCluster">Users:</label>
 
       <select class="users span5" multiple="multiple">
       </select>
 
-      <label class="control-label" for="inputType">Max to graph:</label>
-        {{view Ember.TextField classNames="span2" valueBinding="maxUsersToGraph"}}
-
       <label class="checkbox" class="show-total">
         {{view Ember.Checkbox classNames="show-total" 
-                              checkedBinding="showTotalChecked" 
+                              checkedBinding="aggregateSelectedChecked" 
                               disabledBinding="isInProgress"}}
-        Aggregate remaining
+        Aggregate selected
       </label>
-    </form>
 
-    <form class="form-inline">
-      <label class="control-label" for="inputCluster">X Axis</label>
-
-      <label class="control-label" for="inputCluster">Duration:</label>
+      <label class="control-label" for="inputCluster">Last</label>
       {{view Ember.TextField classNames="span1" valueBinding="durationValue"}}
       {{view Ember.Select classNames="span2"
                             contentBinding="durationUnits"
@@ -64,18 +57,8 @@
                             optionLabelPath="content.name"
                             optionValuePath="content.name"
                             valueBinding="durationUnit"}}
-
     </form>
-
-    <form class="form-inline">
-      <label class="control-label" for="inputCluster">Y Axis</label>
-
-      <label class="control-label" for="inputType">Min:</label>
-        {{view Ember.TextField classNames="span2" placeholder="auto" valueBinding="chart_min"}}
-
-      <label class="control-label" for="inputType">Max:</label>
-        {{view Ember.TextField classNames="span2" placeholder="auto" valueBinding="chart_max"}}
-    </form>
+    
 
   </div>
 
