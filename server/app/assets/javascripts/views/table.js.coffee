@@ -27,7 +27,10 @@ App.TableView = Em.View.extend(
 
     unless data
       console?.log "No data"
+      $("#pager").hide()
       return
+
+    $("#pager").show()
 
     if data.users.length > 0
       # need to render ourselves instead of with ember because the metamorphs
