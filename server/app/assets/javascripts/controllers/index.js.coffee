@@ -17,7 +17,7 @@ App = window.App
 App.IndexController = Ember.Controller.extend(
 
   inProgressCount: 0
-  showTotalChecked: false
+  aggregateSelectedChecked: false
   clusters: []
   selectedCluster: null
   users: []
@@ -127,18 +127,15 @@ App.IndexController = Ember.Controller.extend(
       console?.log "Missing zone"
       return
 
-    show_total = this.get("showTotalChecked")
-
     users_to_aggregate = []
 
-    # To show the total amount in the stacked graph we need to include all users not already included.
-    if show_total
-      selected_users_map = {}
-      _(selected_users).each((user)->selected_users_map[user]=true)
-      users.forEach((user) ->
-        unless selected_users_map[user.name]
-          users_to_aggregate.push user.name          
-      )
+    # Aggregate all non-selected users in case user wants to graph them.
+    selected_users_map = {}
+    _(selected_users).each((user)->selected_users_map[user]=true)
+    users.forEach((user) ->
+      unless selected_users_map[user.name]
+        users_to_aggregate.push user.name          
+    )
 
     console?.log "Loading usage data"
 
@@ -159,7 +156,7 @@ App.IndexController = Ember.Controller.extend(
         this.decrementInProgress()
         this.set("usageData",data)
     )
-  ).observes("selectedUsers","selectedUnit","selectedType","showTotalChecked","selectedZone","durationUnit","durationValue")
+  ).observes("selectedUsers","selectedUnit","selectedType","selectedZone","durationUnit","durationValue")
 
   exportCSV: ->
     console?.log "Exporting CSV"
