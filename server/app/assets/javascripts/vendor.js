@@ -1,3 +1,4 @@
+//= require es5-shim
 //= require jquery-1.7.2.min
 //= require jquery-ui-1.8.24.custom.min
 //= require jquery.multiselect
