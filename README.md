@@ -124,15 +124,13 @@ such as:
 
     /data/hadoop/logs/prod/daily/2013/0123
 
-Coming soon: Scripts which help you upload your Hadoop logs into Hadoop.
-
 ### Packaging
 
 To create a zip package containing all files necessary to run the jobs simply run:
 
     ant zip
 
-If you happen to be using [Azkaban](https://github.com/azkaban/azkaban) as your job scheduler
+If you happen to be using [Azkaban](http://data.linkedin.com/opensource/azkaban) as your job scheduler
 of choice then this zip file will work as long as you add the Azkaban specific configuration 
 to `base.properties`.
 
@@ -150,6 +148,11 @@ To run the incremental job:
 
 The incremental job is more efficient as it only processes new data.  The full job reprocesses
 *everything*.
+
+## Contributing
+
+White Elephant is open source and freely available under the Apache 2 license.  As always, we
+welcome contributors, so send us your pull requests.
 
 ## License
 
