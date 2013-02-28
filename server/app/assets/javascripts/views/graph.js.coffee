@@ -20,7 +20,7 @@ App.GraphView = Em.View.extend(
   renderGraph: (->
     console?.log "Rendering graph"
 
-    $("#chart3").html('')
+    $("#chart").html('')
     $("#legend").html('')
     $("#y_axis").html('')
 
@@ -51,10 +51,9 @@ App.GraphView = Em.View.extend(
     chart_max = null unless chart_max > 0
 
     graph = new Rickshaw.Graph(
-        element: document.querySelector("#chart3")
+        element: document.querySelector("#chart")
         renderer: 'area'
         stroke: true
-        width: 1000
         height: 400
         max: chart_max
         min: chart_min

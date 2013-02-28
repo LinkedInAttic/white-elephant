@@ -1,18 +1,25 @@
-<div class="row">
-  <div id="chart-container" style="display:none">
-    <div id="y_axis"></div>
-    
-    <div id="chart3"></div>
+<div id="chart-container" class="row" style="display:none">
+    <div class="span10 chart-and-axis">
+      <div id="y_axis"></div>
+      <div id="chart"></div>
+    </div>
 
-    <div id="legend-container">
-      <div class="title">Users:</div>
-      <div id="legend"></div>
-      <div id="max-graph">
-        <label class="control-label" for="inputType">Max to graph:</label>
-        {{view Ember.TextField id="maxUsers" classNames="span1" valueBinding="maxUsersToGraph"}}
+    <div id="legend-container" class="span2">
+      <div class="row">
+        <div class="title span2">Users:</div>
+      </div>
+      <div class="row">
+        <div id="legend" class="span2"></div>
+      </div>
+
+      <div class="row">
+        <div id="max-graph" class="span2">
+          <label class="control-label" for="inputType">Max to graph:</label>
+          {{view Ember.TextField id="maxUsers" classNames="span1" valueBinding="maxUsersToGraph"}}
+        </div>
       </div>
     </div>
-    
-    <div id="slider"></div>
-  </div>
+</div>
+<div class="row">
+  <div id="slider" class="span10"></div>
 </div>

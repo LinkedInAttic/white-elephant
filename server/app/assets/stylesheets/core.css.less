@@ -52,27 +52,30 @@ footer {
   padding-top: 26px;
 }
 
-#table {
-  table {
-    margin-left: 14px;
-  }
-}
-
-
 #chart-container {
   position: relative;
 }
 
-#chart3 {
-  position: relative;
-  left: 60px;
-}
+@y_axis_width: 60px;
 
 #y_axis {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 40px;
+  width: @y_axis_width;
+}
+
+#chart {
+  margin-left: @y_axis_width;
+}
+
+#slider {
+  margin-left: 90px;
+  margin-top: 14px;
+}
+
+.chart-and-axis {
+  position: relative;
 }
 
 #legend-container {
@@ -80,12 +83,10 @@ footer {
   right: 0;
   top: 0;
   .title {
-    padding-left: 18px;
     font-weight: bold;
   }
 
   #max-graph {
-    padding-left: 8px;
     padding-top: 8px;
   }
 
@@ -101,10 +102,7 @@ footer {
   margin-left: 60px;
 }
 
-#slider {
-  left: 60px;
-  margin-top: 14px;
-}
+
 
 .rickshaw_legend {
   background: white;
@@ -140,10 +138,6 @@ footer {
 }
 
 // x label should be above the graph so no overlap
-#chart3 .detail .x_label {
+#chart .detail .x_label {
   top: -45px;
-}
-
-#y_axis {
-  width: 60px;
 }
