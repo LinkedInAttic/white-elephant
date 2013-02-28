@@ -151,7 +151,7 @@ App.GraphView = Em.View.extend(
     users = data.users.slice(0,data.users.length)
 
     if users.length == 0
-      console.log "no users"
+      console?.log "no users"
       return series
 
     other_name = null
@@ -168,7 +168,7 @@ App.GraphView = Em.View.extend(
 
     aggregate_selected = this.get("controller").get("aggregateSelectedChecked")
 
-    console.log "aggregate_selected: #{aggregate_selected}"
+    console?.log "aggregate_selected: #{aggregate_selected}"
 
     # aggregate user data when there are too many to graph
     if (aggregate_selected and users.length > 0) || users.length > max_graph
