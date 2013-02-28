@@ -44,6 +44,14 @@ footer {
   }
 }
 
+#graph-container {
+  padding-top: 10px;
+}
+
+.table-container {
+  padding-top: 26px;
+}
+
 #table {
   table {
     margin-left: 14px;
@@ -67,13 +75,23 @@ footer {
   width: 40px;
 }
 
-#legend {
+#legend-container {
   position: absolute;
   right: 0;
   top: 0;
+  .title {
+    padding-left: 18px;
+    font-weight: bold;
+  }
+
+  #max-graph {
+    padding-left: 8px;
+    padding-top: 8px;
+  }
+
   ul {
-    overflow: scroll;
-    height: 300px;
+    overflow: auto;
+    max-height: 260px;
     width: 125px;
   }
 }

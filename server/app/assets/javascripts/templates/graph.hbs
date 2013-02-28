@@ -1,23 +1,17 @@
 <div class="row">
   <div id="chart-container" style="display:none">
     <div id="y_axis"></div>
+    
     <div id="chart3"></div>
-    <div id="legend"></div>
-    <div id="slider"></div>
 
-    <div id="graph-control">
-      <form class="form-inline">
-        <label class="control-label" for="inputCluster">Y Axis</label>
-
-        <label class="control-label" for="inputType">Min:</label>
-          {{view Ember.TextField classNames="span2" placeholder="auto" valueBinding="chart_min"}}
-
-        <label class="control-label" for="inputType">Max:</label>
-          {{view Ember.TextField classNames="span2" placeholder="auto" valueBinding="chart_max"}}
-
+    <div id="legend-container">
+      <div class="title">Users:</div>
+      <div id="legend"></div>
+      <div id="max-graph">
         <label class="control-label" for="inputType">Max to graph:</label>
-          {{view Ember.TextField classNames="span2" valueBinding="maxUsersToGraph"}}
-      </form>
+        {{view Ember.TextField id="maxUsers" classNames="span1" valueBinding="maxUsersToGraph"}}
+      </div>
     </div>
+    
   </div>
 </div>
