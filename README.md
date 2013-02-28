@@ -73,9 +73,10 @@ Therefore the path to the Hadoop JARs must be specified in the configuration.
 
 To build a WAR which can be deployed to tomcat:
 
-    ant war
+    ant war -Dconfig.path=<path-to-config>
 
-The `config.yml` file will be packaged with the WAR.
+The config file you specify will be packaged as `config.yml` within the WAR.  See `sample_config.yml`
+as an example for how to write the config file.
 
 ## Hadoop Log Uploading
 

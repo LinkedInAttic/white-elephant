@@ -81,8 +81,12 @@
   </target>
 
   <target name="war" depends="build">
+    <fail unless="config.path">You must define 'config.path' with -Dconfig.path=&lt;path-to-config&gt;</fail>
+    <delete file="config.yml"/>
+    <copy file="${config.path}" tofile="config.yml"/>
     <exec executable=".rbenv/shims/warble" failonerror="true">
     </exec>
+    <delete file="config.yml"/>
   </target>
 
   <target name="hadoop" description="builds the hadoop libraries">
