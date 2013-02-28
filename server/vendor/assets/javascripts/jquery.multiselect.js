@@ -127,7 +127,7 @@ $.widget("ech.multiselect", {
 		el.find('option').each(function( i ){
 			var $this = $(this),
 				parent = this.parentNode,
-				title = this.innerText,
+				title = $this.text(),
 				description = this.title,
 				value = this.value,
 				inputID = 'ui-multiselect-' + (this.id || id + '-option-' + i),
