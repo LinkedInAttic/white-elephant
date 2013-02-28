@@ -50,11 +50,11 @@ which it looks for in the directory specified in `config.yml`.
 
 ### Configuration
 
-The server configuration is contained in `config.yml`.  
+The server configuration is contained in `config.yml`.  You can see a sample in {{sample_config.yml}}.
 
-When run in development mode using `./startup.sh` it uses configuration specified under `local`.  
-The only configurable parameter here is `file_pattern`, which specifies where to load the usage
-data from on local disk.
+When run in development mode using `./startup.sh`, {{sample_config.yml}} is used and it follows the
+settings specified under `local`.  The only configurable parameter here is `file_pattern`, which specifies 
+where to load the usage data from on local disk.
 
 When packaged as a WAR it runs in production mode and uses configuration specified under `hadoop`, 
 the assumption being that the aggregated usage data will be available there.  The following 

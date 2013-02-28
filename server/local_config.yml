@@ -1,8 +1,0 @@
-usage_loading:
-  # How often to check for new aggregated usage data to load.
-  refresh_in_mins: 15
-
-  # When running against local disk
-  local:
-    # "ant test-data" generates data in this path
-    file_pattern: data/usage/*.avro 
