@@ -26,15 +26,18 @@ App.GraphView = Em.View.extend(
 
     series = this.get("series")
 
+    $('#slider').hide()
+    $("#chart-container").hide()
+
     unless series
       console?.log "No series"
       return
 
     if series.length == 0
       console?.log "Series is empty"
-      $("#chart-container").hide()
       return
 
+    $('#slider').show()      
     $("#chart-container").show()
 
     chart_max = this.get('controller').get('chart_max')
