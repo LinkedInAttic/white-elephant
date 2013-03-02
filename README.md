@@ -50,9 +50,9 @@ which it looks for in the directory specified in `config.yml`.
 
 ### Configuration
 
-The server configuration is contained in `config.yml`.  You can see a sample in {{sample_config.yml}}.
+The server configuration is contained in `config.yml`.  You can see a sample in `sample_config.yml`.
 
-When run in development mode using `./startup.sh`, {{sample_config.yml}} is used and it follows the
+When run in development mode using `./startup.sh`, `sample_config.yml` is used and it follows the
 settings specified under `local`.  The only configurable parameter here is `file_pattern`, which specifies 
 where to load the usage data from on local disk.
 
