@@ -24,7 +24,7 @@ x="${txtred}[x]${txtrst}" # fail mark
 
 base_dir=$(dirname $0)
 
-JRUBY_VERSION=1.7.2
+JRUBY_VERSION=1.7.3
 SETUP_SUCCESS=.setup-success
 
 #

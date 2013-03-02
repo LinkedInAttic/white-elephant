@@ -97,19 +97,15 @@ web application into the DB and queried against.
 
 ### Configuration
 
-The configuration files are located under `hadoop/config/jobs`:
+Some sample configuration files can be found under `hadoop/config/jobs`:
 
 * **base.properties**: Contains most of the configuration
 * **white-elephant-full-usage.job**: Job file used when processing all logs.
 * **white-elephant-incremental-usage.job**: Job file used when incrementally processing logs.
 
 The `base.properties` file consists of configuration specific to White Elephant and configuration
-specifically for Hadoop.  All Hadoop configuration parameter begin with `hadoop-conf`.
-
-To run the jobs you'll use the `run.sh` script, which requires a couple environment variables:
-
-* **HADOOP_CONF_DIR**: Hadoop configuration directory
-* **HADOOP_LIB_DIR**: Hadoop JARs directory
+specifically for Hadoop.  All Hadoop configuration parameter begin with `hadoop-conf`.  The two
+job files just have a single settings `incremental` and only differ in the value they use for it.
 
 ### Hadoop Logs
 
@@ -128,15 +124,22 @@ such as:
 
 To create a zip package containing all files necessary to run the jobs simply run:
 
-    ant zip
+    ant zip -Djob.config.dir=<path-to-job-config-dir>
+
+The `job.config.dir` should be the directory containing the `.properties` and `.job` files you would
+like to include in the package.
 
 If you happen to be using [Azkaban](http://data.linkedin.com/opensource/azkaban) as your job scheduler
-of choice then this zip file will work as long as you add the Azkaban specific configuration 
+of choice then this zip file will work with it as long as you add the Azkaban specific configuration 
 to `base.properties`.
 
 ### Running
 
-After unzipping the zip package you can run using `run.sh`.
+After unzipping the zip package you can run using the `run.sh` script.  This requires a couple environment 
+variables to be set:
+
+* **HADOOP_CONF_DIR**: Hadoop configuration directory
+* **HADOOP_LIB_DIR**: Hadoop JARs directory
 
 To run the full job:
 

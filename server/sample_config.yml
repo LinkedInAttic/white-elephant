@@ -5,7 +5,7 @@ usage_loading:
   # When running against local disk
   local:
     # "ant test-data" generates data in this path
-    file_pattern: data/usage/*.avro 
+    file_pattern: data/usage/**/*.avro 
 
   # When running against HDFS as source data
   hadoop:

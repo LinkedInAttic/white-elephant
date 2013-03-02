@@ -31,7 +31,6 @@
   <property name="jar.final.path" value="${dist.dir}/${jar.final.name}"/>
   <property name="zip.path" value="${dist.dir}/${name}.zip"/>
   <property name="job.dir" value="${dist.dir}/job"/>
-  <property name="job.config.dir" value="${basedir}/config/jobs"/>
   <property name="bin.dir" value="${basedir}/bin"/>
 
   <target name="all" depends="clean,init,jar"/>
@@ -125,6 +124,7 @@
   </target>
 
   <target name="zip" depends="fatjar">
+    <fail unless="job.config.dir">You must define 'job.config.dir' with -Djob.config.dir=&lt;path-to-job-files&gt;</fail>
     <mkdir dir="${dist.dir}"/>
     <delete file="${zip.path}"/>
     <zip destfile="${zip.path}">

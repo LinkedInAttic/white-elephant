@@ -135,7 +135,6 @@ Warbler::Config.new do |config|
   # config.webxml.rackup = require 'cgi' && CGI::escapeHTML(File.read("config.ru"))
   config.webxml.rackup.path = "WEB-INF/config.ru"
 
-  # make development so debugging is easier
   config.webxml.rack.env = "production"
 
   # Control the pool of Rails runtimes. Leaving unspecified means

@@ -20,7 +20,6 @@ require 'sinatra'
 require 'sinatra/content_for'
 require 'sinatra/url_for'
 require 'json'
-require "rack/csrf"
 require 'rack/cache'
 require 'sprockets'
 require 'yaml'
