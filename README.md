@@ -157,6 +157,20 @@ The incremental job is more efficient as it only processes new data.  The full j
 White Elephant is open source and freely available under the Apache 2 license.  As always, we
 welcome contributors, so send us your pull requests.
 
+## Thanks
+
+White Elephant is built using a suite of great open source projects.  Just to name a few:
+
+* [JRuby](http://jruby.org/)
+* [HyperSQL](http://hsqldb.org/)
+* [Bootstrap](http://twitter.github.com/bootstrap/)
+* [Rickshaw](http://code.shutterstock.com/rickshaw/)
+* [Ember.js](http://emberjs.com/)
+* [D3](http://d3js.org/)
+* [Moment.js](http://momentjs.com/)
+* [jQuery](http://jquery.com/)
+* [jQuery UI](http://jqueryui.com/)
+
 ## License
 
 Copyright 2012 LinkedIn, Inc
