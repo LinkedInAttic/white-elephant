@@ -4,7 +4,6 @@
 //= require jquery.multiselect
 //= require jquery.multiselect.filter
 //= require underscore-1.3.3-min
-//= require backbone-0.9.2-min
 //= require mustache
 //= require jquery.tablesorter
 //= require jquery.tablesorter.pager
