@@ -16,6 +16,15 @@ $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
 require 'environment.rb'
 
+helpers do
+  def url_for_asset(asset_name)
+    asset = $sprockets[asset_name]
+    raise "#{asset_name} not found" unless asset
+    # include digest to prevent caching stale assets
+    url_for "/assets/" + asset.digest_path
+  end
+end
+
 get "/" do
   erb :home
 end

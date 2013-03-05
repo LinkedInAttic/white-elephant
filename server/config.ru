@@ -24,18 +24,13 @@ HandlebarsAssets::Config.ember = true
 use Rack::Deflater
 
 map '/assets' do
-
-  environment = Sprockets::Environment.new do |env|
-
-  end
-
-  environment.append_path 'vendor/assets/javascripts'
-  environment.append_path 'vendor/assets/stylesheets'
-  environment.append_path 'app/assets/javascripts'
-  environment.append_path 'app/assets/stylesheets'
-  environment.append_path HandlebarsAssets.path
-
-  run environment
+  $sprockets = Sprockets::Environment.new
+  $sprockets.append_path 'vendor/assets/javascripts'
+  $sprockets.append_path 'vendor/assets/stylesheets'
+  $sprockets.append_path 'app/assets/javascripts'
+  $sprockets.append_path 'app/assets/stylesheets'
+  $sprockets.append_path HandlebarsAssets.path
+  run $sprockets
 end
 
 map '/' do  
