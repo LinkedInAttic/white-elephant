@@ -3,7 +3,7 @@
 White Elephant is a Hadoop log aggregator and dashboard which enables 
 visualization of Hadoop cluster utilization across users.
 
-![Screenshot](https://github.com/linkedin/white-elephant/raw/master/server/screenshots/example.png)
+![Screenshot](https://s3.amazonaws.com/snaprojects/blog/whitel/whitel_ex2.png)
 
 ## Quick Start
 
