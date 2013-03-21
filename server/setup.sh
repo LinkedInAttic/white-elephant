@@ -108,17 +108,23 @@ function installJRuby() {
   mkdir -p $base_dir/.rbenv/versions  
   command -v wget >/dev/null 2>&1
   checkErrors "Failed to find wget" "Found wget"
-  wget -nv -O jruby-bin-$JRUBY_VERSION.zip http://jruby.org.s3.amazonaws.com/downloads/$JRUBY_VERSION/jruby-bin-$JRUBY_VERSION.zip && unzip -q jruby-bin-$JRUBY_VERSION.zip -d $tmp_dir && rm jruby-bin-$JRUBY_VERSION.zip && mv $tmp_dir/jruby-$JRUBY_VERSION $jruby_dir
+  jruby_zip=jruby-bin-$JRUBY_VERSION.zip
+  colorOut "Downloading $jruby_zip" $txtyel
+  wget -O $jruby_zip http://jruby.org.s3.amazonaws.com/downloads/$JRUBY_VERSION/$jruby_zip
+  checkErrors "Failed download JRuby" "Downloaded JRuby"
+  colorOut "Extracting $jruby_zip to $jruby_dir" $txtyel
+  unzip -q jruby-bin-$JRUBY_VERSION.zip -d $tmp_dir && rm jruby-bin-$JRUBY_VERSION.zip && mv $tmp_dir/jruby-$JRUBY_VERSION $jruby_dir
 }
 
 function checkJRuby() {
-  if [ ! -d "$base_dir/.rbenv/versions/jruby-$JRUBY_VERSION" ];
+  jruby_dir=$base_dir/.rbenv/versions/jruby-$JRUBY_VERSION
+  if [ ! -d "$jruby_dir" ];
   then
-    colorOut "JRuby $JRUBY_VERSION is not installed" $txtyel
+    colorOut "JRuby $JRUBY_VERSION not found at $jruby_dir" $txtyel
 
     runCommand \
       "installJRuby"\
-      "Installing JRuby $JRUBY_VERSION"\
+      "Installing JRuby $JRUBY_VERSION locally"\
       "Failed to install JRuby $JRUBY_VERSION"
 
     rbenv rehash
@@ -198,7 +204,7 @@ fi
 
 runCommand \
   "checkForRvm"\
-  "Making sure RVM is not installed"\
+  "Making sure RVM is not installed (since incompatible with rbenv)"\
   "rbenv is incompatible with RVM, if you wish to remove rvm then run 'rvm implode'"
 
 runCommand \
@@ -208,7 +214,7 @@ runCommand \
 
 runCommand \
   "checkJRuby"\
-  "Checking for JRuby"\
+  "Checking for local install of JRuby"\
   "Failed to install JRuby"
 
 runCommand \
