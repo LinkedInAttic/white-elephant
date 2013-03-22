@@ -50,9 +50,11 @@ sub prefilter {
 
     my $path = "$HADOOP_DEST/$GRID/daily/$queue/$Year/${Month}${Day}";
 
-    print "Checking $path\n";
+    my $cmd = "$HADOOP dfs -lsr $path";
 
-    open( FH, "$HADOOP dfs -lsr $path 2>/dev/null|" );
+    print "$cmd\n";
+
+    open( FH, "$cmd 2>/dev/null|" );
     while ( <FH> ) {
         @line = split( /\s+/ );
         my $hdfsfile = $line[7];
@@ -201,10 +203,10 @@ if ( -r $CONFIG ) {
 }
 
 do {
-    my ( $fn, $beg, $line, $queue, $nonxml, $xml, $hdfsname, $confname );
+    my ( $filename, $beg, $line, $queue, $logfile, $jobconfxml, $hdfsname, $confname );
     my ( $year, $month, $day, $ftime );
     my ( $deltayear, $deltamonth, $deltaday );
-    my @list;
+    my @fileparts;
 
     if ( -f "/tmp/statsupload.lock" ) {
         print STDERR "$0: already running (found /tmp/statsupload.lock)\n";
@@ -245,7 +247,7 @@ do {
     my $existing_count = 0;
     my $total = 0;
 
-    foreach $fn ( @NONXMLS ) {
+    foreach $filename ( @NONXMLS ) {
 
         $total += 1;
 
@@ -255,26 +257,34 @@ do {
         # find the queue
         #
 
-        $nonxml = $fn;
+        $logfile = $filename;
 
-        @list   = split( /_/, $fn );
-        $xml    = join( '_', @list[0 .. 4] ) . "_conf.xml";
+        @fileparts   = split( /_/, File::Basename::basename($logfile) );
 
-        $queue = findqueue( $xml );
+        my $job_name = join( '_', @fileparts[0 .. 2] );
+
+        # Find the job conf xml.  There should only be one matching the job name.
+        foreach (glob (File::Basename::dirname($logfile) . "/" . "*" . $job_name . "_conf.xml")) {
+            $jobconfxml = $_;
+            last;
+        }
+
+        # Get the job queue from the job conf xml.
+        $queue = findqueue( $jobconfxml );
         if ( !$queue ) { next; }
 
-        $ftime = ( stat( $nonxml ) )[9];
+        $ftime = ( stat( $logfile ) )[9];
         ( $day, $month, $year ) = ( localtime( $ftime ) )[3, 4, 5];
         $year  += 1900;
         $month += 1;
-        $hdfsname = pathbuilder( "daily", $GRID, $year, $month, $day, $queue, join( '_', @list[0 .. 4] ) ) . ".log";
+        $hdfsname = pathbuilder( "daily", $GRID, $year, $month, $day, $queue, $job_name ) . ".log";
         
         # as that is missing from keys in %DIRSTRUCT
         # need to strip 'hdfs://mynamenode.example.com:9000' off hdfsname
         $hdfsname =~ m!^hdfs://.*?(/.*$)!;
         if ( !exists( $DIRSTRUCT{$1} ) ) {
             print "Put to $hdfsname\n";
-            my $cmd = "$HADOOP dfs -put $nonxml $hdfsname 2>/dev/null";
+            my $cmd = "$HADOOP dfs -put $logfile $hdfsname 2>/dev/null";
             system( "$cmd" );
             $upload_count += 1;
         }
@@ -282,13 +292,13 @@ do {
             $existing_count += 1;
         }
 
-        $confname = pathbuilder( "daily", $GRID, $year, $month, $day, $queue, $xml );
+        $confname = pathbuilder( "daily", $GRID, $year, $month, $day, $queue, $job_name . "_conf.xml" );
         # need to strip 'hdfs://mynamenode.example.com:9000' off confname
         # as that is missing from keys in %DIRSTRUCT
         $confname =~ m!^hdfs://.*?(/.*$)!;
         if ( !exists( $DIRSTRUCT{$1} ) ) {
             print "Put to $confname\n";
-            my $cmd = "$HADOOP dfs -put $xml $confname 2>/dev/null";
+            my $cmd = "$HADOOP dfs -put $jobconfxml $confname 2>/dev/null";
             system( "$cmd" );
             $upload_count += 1;
         }
