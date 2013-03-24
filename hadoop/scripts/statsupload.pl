@@ -24,6 +24,8 @@ my @NONXMLS;
 # Only upload logs older than 24 hours.
 my $OLDERTHAN = time() - ( 60 * 60 * 24 * 1 );
 
+my $NEWERTHAN;
+
 # Keeps track of which files are already uploaded to HDFS.
 my %DIRSTRUCT = ();
 
@@ -121,7 +123,7 @@ sub wanted {
 
     if ( ( -f $j ) && ( $j !~ /xml$/ ) && ( $base !~ /^\./ ) && ( $j !~ /\.crc$/ ) ) {
         $ftime = ( stat( $j ) )[9];
-        if ( $ftime < $OLDERTHAN ) {
+        if ( $ftime < $OLDERTHAN && $ftime >= $NEWERTHAN) {
             push( @NONXMLS, $j );
         }
     }
@@ -184,6 +186,12 @@ if ( -r $CONFIG ) {
     }
     if ( exists( $cfg::CFG{'days'} ) ) {
         $DAYS = $cfg::CFG{'days'};
+
+        # Ignore local log files older than specified
+        # number of days.  Otherwise due to the comparison
+        # with files found in HDFS we will upload files which
+        # may already be in HDFS.
+        $NEWERTHAN = time() - ( 60 * 60 * 24 * $DAYS )
     } else {
         die( "Make sure 'days' is set in your config file" );
     }
@@ -239,13 +247,15 @@ do {
 
     my $history_dir = "$HADOOP_LOG_DIR/history";
 
-    print "Searching $history_dir for logs\n";
+    print "\nSearching $history_dir for logs\n";
 
     File::Find::find( { wanted => \&wanted }, $history_dir );
 
     my $upload_count = 0;
     my $existing_count = 0;
     my $total = 0;
+    my $skipped = 0;
+    my $failed = 0;
 
     foreach $filename ( @NONXMLS ) {
 
@@ -261,12 +271,29 @@ do {
 
         @fileparts   = split( /_/, File::Basename::basename($logfile) );
 
-        my $job_name = join( '_', @fileparts[0 .. 2] );
+        my $job_index = 0;
+
+        ++$job_index until $fileparts[$job_index] eq "job" or $job_index >= $#fileparts;
+
+        if ($job_index >= $#fileparts)
+        {
+            next;
+        }
+
+        my $job_name = join( '_', @fileparts[($job_index) .. ($job_index + 2)] );
 
         # Find the job conf xml.  There should only be one matching the job name.
-        foreach (glob (File::Basename::dirname($logfile) . "/" . "*" . $job_name . "_conf.xml")) {
+        my $conf_pattern = File::Basename::dirname($logfile) . "/" . "*" . $job_name . "_conf.xml";
+        $jobconfxml = undef;
+        foreach (glob ($conf_pattern)) {
             $jobconfxml = $_;
             last;
+        }
+
+        if (!$jobconfxml) {
+            print "\nFailed to locate job conf xml file for $job_name, skipping...\n";
+            $skipped += 1;
+            next;
         }
 
         # Get the job queue from the job conf xml.
@@ -283,10 +310,20 @@ do {
         # need to strip 'hdfs://mynamenode.example.com:9000' off hdfsname
         $hdfsname =~ m!^hdfs://.*?(/.*$)!;
         if ( !exists( $DIRSTRUCT{$1} ) ) {
-            print "Put to $hdfsname\n";
-            my $cmd = "$HADOOP dfs -put $logfile $hdfsname 2>/dev/null";
-            system( "$cmd" );
-            $upload_count += 1;
+            print "\nUploading $logfile\n";
+            print "-> $hdfsname\n";
+            my $cmd = "$HADOOP dfs -put $logfile $hdfsname";
+            print "command: $cmd\n";
+            my $return_code = system( "$cmd" );
+            if ($return_code == 0)
+            {
+                $upload_count += 1;
+            }
+            else
+            {
+                print "Upload failed\n";
+                $failed += 1;
+            }
         }
         else {
             $existing_count += 1;
@@ -297,21 +334,33 @@ do {
         # as that is missing from keys in %DIRSTRUCT
         $confname =~ m!^hdfs://.*?(/.*$)!;
         if ( !exists( $DIRSTRUCT{$1} ) ) {
-            print "Put to $confname\n";
-            my $cmd = "$HADOOP dfs -put $jobconfxml $confname 2>/dev/null";
-            system( "$cmd" );
-            $upload_count += 1;
+            print "\nUploading $jobconfxml\n";
+            print "-> $confname\n";
+            my $cmd = "$HADOOP dfs -put $jobconfxml $confname";
+            print "command: $cmd\n";
+            my $return_code = system( "$cmd" );
+            if ($return_code == 0)
+            {
+                $upload_count += 1;
+            }
+            else
+            {
+                print "Upload failed\n";
+                $failed += 1;
+            }
         }
         else {
             $existing_count += 1;
         }
-
-        print "Uploaded $upload_count files, found $existing_count existing\n"
     }
 
     if ($total == 0)
     {
-        print "Found no new logs to upload\n";
+        print "\nFound no new logs to upload\n";
+    }
+    else
+    {
+        print "\nUploaded $upload_count files, found $existing_count existing, skipped $skipped, and $failed failed\n"
     }
 
     unlink( "/tmp/statsupload.lock" );
