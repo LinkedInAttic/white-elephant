@@ -16,6 +16,11 @@ To try out the server with some test data:
 Then visit [http://localhost:3000](http://localhost:3000).  It may take a minute for the test data
 to load.
 
+## Hadoop Version Compatibility
+
+White Elephant is compiled and tested against Hadoop 1.0.3 and should work with any 1.0.x version.
+Hadoop 2.0 is not yet supported.
+
 ## Server
 
 The server is a JRuby web application.  In a production environment it can be deployed to tomcat
