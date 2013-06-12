@@ -2,7 +2,16 @@ usage_loading:
   # How often to check for new aggregated usage data to load.
   refresh_in_mins: 15
 
-  # When running against local disk
+  db:
+    # Configure HyperSQL to use in-memory DB
+    mode: memory
+
+    # Alternatively could configure HyperSQL to use disk based
+    # DB instead.
+    #mode: disk
+    #path: /path/to/my/db
+
+  # When running against local disk as source data
   local:
     # "ant test-data" generates data in this path
     file_pattern: data/usage/**/*.avro 
@@ -21,6 +30,7 @@ usage_loading:
     # Where to find the Hadoop configuration.  This will be added to the classpath.
     conf_dir: /hadoop/conf
 
-    secure:
-      principal: username
-      keytab: /home/username/username.keytab
+    # When connecting to a secure Hadoop cluster these lines must be used to login.
+    #secure:
+    #  principal: username
+    #  keytab: /home/username/username.keytab

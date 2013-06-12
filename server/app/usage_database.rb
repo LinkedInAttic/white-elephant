@@ -18,14 +18,20 @@ java_import com.linkedin.whiteelephant.TimeZoneConversion
 
 class UsageDatabase
   
-  def initialize(key)
-    @key = key
-  end
-
   class << self
 
+    def use_in_memory_db
+      @connection_string = "jdbc:hsqldb:mem:mymemdb"
+      puts "Running DB in memory mode"
+    end
+
+    def use_disk_db(path)      
+      @connection_string = "jdbc:hsqldb:file:#{path}"
+      puts "Running DB in file mode with path #{path}"
+    end
+
     def connection
-      Java::java.sql.DriverManager.getConnection("jdbc:hsqldb:mem:mymemdb", "SA", "")
+      Java::java.sql.DriverManager.getConnection(@connection_string, "SA", "")
     end
 
     def clear_db

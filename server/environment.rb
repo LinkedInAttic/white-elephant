@@ -50,12 +50,26 @@ helpers do
 end
 
 require 'app/usage_database'
-
-UsageDatabase.initialize_db
-
 require 'app/usage_data'
 
 @@config = YAML.load_file(File.dirname(__FILE__) + '/config.yml')
+
+
+
+if db_config = @@config["usage_loading"] && @@config["usage_loading"]["db"]
+  case db_config["mode"]
+  when "memory"
+    UsageDatabase.use_in_memory_db
+  when "disk"
+    db_path = db_config["path"]
+    raise "Need db path in order to run in disk mode" unless db_path
+    UsageDatabase.use_disk_db(db_path)
+  end
+else
+  UsageDatabase.use_in_memory_db
+end
+
+UsageDatabase.initialize_db
 
 configure :development do
   require 'app/usage_local_loader'

@@ -30,8 +30,7 @@ class UsageFileLoadTask
     # create thread local connection so we don't need to keep recreating one per task
     @@conn = Class.new(Java::java.lang.ThreadLocal) do 
       def initialValue
-        # puts "Creating connection!"
-        Java::java.sql.DriverManager.getConnection("jdbc:hsqldb:mem:mymemdb", "SA", "")
+        UsageDatabase.connection
       end
     end.new
 

@@ -30,9 +30,16 @@ class UsageHadoopLoader < UsageLoader
   end
 
   def before_load
+    puts "Hadoop usage loader starting"
+
+    unless @config["usage_loading"]["hadoop"]
+      raise "hadoop configuration not found at usage_loading->hadoop" 
+    end
 
     conf_dir = @config["usage_loading"]["hadoop"]["conf_dir"]
 
+    raise "missing hadoop conf dir at usage_loading->hadoop->conf_dir" unless conf_dir
+    
     # config files must be in classpath for hadoop to find them
     unless $CLASSPATH.include? conf_dir
       $CLASSPATH << conf_dir
@@ -64,23 +71,34 @@ class UsageHadoopLoader < UsageLoader
 
     UserGroupInformation.setConfiguration(@conf)
 
-    principal = @config["usage_loading"]["hadoop"]["secure"]["principal"]
-    keytab_file = @config["usage_loading"]["hadoop"]["secure"]["keytab"]
+    if UserGroupInformation.security_enabled?
+      puts "This is a secure Hadoop cluster, login is required"
 
-    puts "Logging in as #{principal} with keytab #{keytab_file}"
+      secure_settings = @config["usage_loading"]["hadoop"]["secure"]
 
-    UserGroupInformation.loginUserFromKeytab(principal, keytab_file)
+      raise "Missing secure hadoop settings at usage_loading->hadoop->secure" unless secure_settings
+
+      principal = secure_settings["principal"]
+      raise "Missing principal" unless principal
+      keytab_file = secure_settings["keytab"]
+      raise "Missing keytab" unless keytab_file
+
+      puts "Logging in as #{principal} with keytab #{keytab_file}"
+
+      UserGroupInformation.loginUserFromKeytab(principal, keytab_file)
+    else
+      puts "This is not a secure Hadoop cluster, no login required"
+    end
 
     @fs = FileSystem.get(@conf)
 
-    puts "done"
   rescue Exception => ex
     puts "Failed: " + ex.to_s
     raise ex
   end
 
   def after_load
-
+    puts "Hadoop usage loader finished"
   end
 
   def list_files
