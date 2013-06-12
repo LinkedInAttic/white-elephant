@@ -54,9 +54,9 @@ require 'app/usage_data'
 
 @@config = YAML.load_file(File.dirname(__FILE__) + '/config.yml')
 
+raise "root element 'usage_loading' not found in config" unless @@config["usage_loading"]
 
-
-if db_config = @@config["usage_loading"] && @@config["usage_loading"]["db"]
+if db_config = @@config["usage_loading"]["db"]
   case db_config["mode"]
   when "memory"
     UsageDatabase.use_in_memory_db
@@ -71,13 +71,27 @@ end
 
 UsageDatabase.initialize_db
 
-configure :development do
-  require 'app/usage_local_loader'
-  UsageLocalLoader.new(@@config).start
-end
+data_config = @@config["usage_loading"]["data"]
 
-configure :production do
-  @@config["usage_loading"]["hadoop"]["libs"].each do |lib_path|
+raise "data configuration not found at usage_loading->data" unless data_config
+
+data_mode = data_config["mode"]
+
+loader = case data_mode
+when "local"
+  puts "Creating local loader"
+  require 'app/usage_local_loader'
+  local_config = data_config["local"]
+  raise "local config not found at usage_loading->data->local" unless local_config
+  UsageLocalLoader.new(local_config) 
+when "hadoop"
+  puts "Creating hadoop loader"
+  hadoop_config = data_config["hadoop"]
+  raise "local config not found at usage_loading->data->hadoop" unless hadoop_config
+  hadoop_lib_dirs = hadoop_config["libs"]
+  raise "hadoop lib dirs not found or empty at usage_loading->data->hadoop->libs" unless hadoop_lib_dirs && hadoop_lib_dirs.size > 0
+
+  hadoop_lib_dirs.each do |lib_path|
     puts "Searching for JARs in #{lib_path}"
     Dir[File.join(lib_path,"*.jar")].each do |lib|
       puts "Adding to classpath: #{lib}"
@@ -86,5 +100,10 @@ configure :production do
   end
 
   require 'app/usage_hadoop_loader'
-  UsageHadoopLoader.new(@@config).start
+  UsageHadoopLoader.new(hadoop_config)
+else
+  raise "data mode must be either 'local' or 'hadoop'"
 end
+
+puts "Starting loader"
+loader.start

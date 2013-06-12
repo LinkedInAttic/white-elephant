@@ -22,7 +22,9 @@ class UsageLocalLoader < UsageLoader
   end
 
   def list_files
-    file_pattern = @config["usage_loading"]["local"]["file_pattern"]
+    file_pattern = @config["file_pattern"]
+
+    raise "file pattern not found" unless file_pattern && file_pattern.size > 0
 
     puts "Listing local files in #{file_pattern}"
 

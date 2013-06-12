@@ -32,13 +32,9 @@ class UsageHadoopLoader < UsageLoader
   def before_load
     puts "Hadoop usage loader starting"
 
-    unless @config["usage_loading"]["hadoop"]
-      raise "hadoop configuration not found at usage_loading->hadoop" 
-    end
+    conf_dir = @config["conf_dir"]
 
-    conf_dir = @config["usage_loading"]["hadoop"]["conf_dir"]
-
-    raise "missing hadoop conf dir at usage_loading->hadoop->conf_dir" unless conf_dir
+    raise "missing hadoop conf dir 'conf_dir'" unless conf_dir
     
     # config files must be in classpath for hadoop to find them
     unless $CLASSPATH.include? conf_dir
@@ -74,9 +70,9 @@ class UsageHadoopLoader < UsageLoader
     if UserGroupInformation.security_enabled?
       puts "This is a secure Hadoop cluster, login is required"
 
-      secure_settings = @config["usage_loading"]["hadoop"]["secure"]
+      secure_settings = @config["secure"]
 
-      raise "Missing secure hadoop settings at usage_loading->hadoop->secure" unless secure_settings
+      raise "Missing secure hadoop settings 'secure'" unless secure_settings
 
       principal = secure_settings["principal"]
       raise "Missing principal" unless principal
@@ -102,7 +98,8 @@ class UsageHadoopLoader < UsageLoader
   end
 
   def list_files
-    file_pattern = @config["usage_loading"]["hadoop"]["file_pattern"]
+    file_pattern = @config["file_pattern"]
+    raise "file pattern not found" unless file_pattern && file_pattern.size > 0
     @fs.globStatus(Path.new(file_pattern)).map do |file|
       modified_time = Time.at(file.modification_time/1000)
       [file.get_path.to_s,modified_time]

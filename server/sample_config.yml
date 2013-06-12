@@ -1,6 +1,4 @@
 usage_loading:
-  # How often to check for new aggregated usage data to load.
-  refresh_in_mins: 15
 
   db:
     # Configure HyperSQL to use in-memory DB
@@ -11,26 +9,39 @@ usage_loading:
     #mode: disk
     #path: /path/to/my/db
 
-  # When running against local disk as source data
-  local:
-    # "ant test-data" generates data in this path
-    file_pattern: data/usage/**/*.avro 
+  data:
+    # Get usage data from local disk
+    mode: local
 
-  # When running against HDFS as source data
-  hadoop:
+    # Get usage data from Hadoop
+    # mode: hadoop
 
-    # Glob pattern to load usage files from HDFS.
-    file_pattern: hdfs://namenode.url.com:port/path/to/root/usage-per-hour/*/*/*/*.avro
+    # When using local disk for source data
+    local:
+      # "ant test-data" generates data matching this pattern
+      file_pattern: data/usage/**/*.avro 
 
-    # Directories containing JARs to be added to the classpath.
-    libs:
-      - /hadoop/binaries
-      - /hadoop/binaries/lib
+      # How often to check for new aggregated usage data to load.
+      refresh_in_mins: 15
 
-    # Where to find the Hadoop configuration.  This will be added to the classpath.
-    conf_dir: /hadoop/conf
+    # When using Hadoop for source data
+    hadoop:
 
-    # When connecting to a secure Hadoop cluster these lines must be used to login.
-    #secure:
-    #  principal: username
-    #  keytab: /home/username/username.keytab
+      # How often to check for new aggregated usage data to load.
+      refresh_in_mins: 15
+
+      # Glob pattern to load usage files from HDFS.
+      file_pattern: hdfs://namenode.url.com:port/path/to/root/usage-per-hour/*/*/*/*.avro
+
+      # Directories containing JARs to be added to the classpath.
+      libs:
+        - /hadoop/binaries
+        - /hadoop/binaries/lib
+
+      # Where to find the Hadoop configuration.  This will be added to the classpath.
+      conf_dir: /hadoop/conf
+
+      # When connecting to a secure Hadoop cluster these lines must be used to login.
+      #secure:
+      #  principal: username
+      #  keytab: /home/username/username.keytab

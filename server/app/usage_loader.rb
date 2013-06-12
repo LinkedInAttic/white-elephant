@@ -24,10 +24,18 @@ class UsageLoader < Java::java.lang.Thread
   end
 
   def run
-    refresh_in_ms = begin
-      mins = @config["usage_loading"]["refresh_in_mins"]
-      (mins*60*1000).to_i
+    begin
+      puts "Running usage loader"
+      refresh_in_ms = begin
+        mins = @config["refresh_in_mins"]
+        (mins*60*1000).to_i
+      end
+      puts "Refresh every #{refresh_in_ms} ms"
+    rescue StandardError => error 
+      puts "Failed to start usage loader thread: #{error}"
+      raise error
     end
+
     loop do
       begin
         puts "Loading avro data"
@@ -36,8 +44,8 @@ class UsageLoader < Java::java.lang.Thread
         after_load
 
       # prevent known exception from killing our thread
-      rescue Java::java.io.IOException => ioe
-        puts ioe.to_s
+      rescue StandardError, Java::java.io.IOException => error
+        puts "Failed to load avro data: #{error}"
       
       ensure 
         puts "Waiting #{refresh_in_ms} ms before next refresh"
