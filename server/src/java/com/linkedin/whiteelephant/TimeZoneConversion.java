@@ -63,4 +63,22 @@ public class TimeZoneConversion
     
     return new java.sql.Timestamp(cal.getTimeInMillis());
   }
+  
+  public static java.sql.Timestamp roundTimestampToQuarter(java.sql.Timestamp timestamp, String timezoneId)
+  {
+    TimeZone timezone = TimeZone.getTimeZone(timezoneId);    
+    Calendar cal = Calendar.getInstance(timezone);
+    cal.setTimeInMillis(timestamp.getTime());
+    
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+
+    // round down to beginning of quarter
+    cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) - (cal.get(Calendar.MONTH) % 3));
+    
+    return new java.sql.Timestamp(cal.getTimeInMillis());
+  }
 }

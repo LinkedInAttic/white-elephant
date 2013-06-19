@@ -157,6 +157,15 @@ class UsageDatabase
 
           |)
         statement.close
+
+        statement = connection.create_statement
+        statement.execute_update(%|
+          CREATE FUNCTION roundTimestampToQuarter(t TIMESTAMP, z VARCHAR(30)) RETURNS TIMESTAMP
+          LANGUAGE JAVA DETERMINISTIC NO SQL
+          EXTERNAL NAME 'CLASSPATH:com.linkedin.whiteelephant.TimeZoneConversion.roundTimestampToQuarter'
+
+          |)
+        statement.close
       end
     end
   end

@@ -188,7 +188,7 @@ class UsageLoader < Java::java.lang.Thread
 
       until executor.awaitTermination(2,Java::java.util.concurrent.TimeUnit::SECONDS) do
         num_finished = futures.count { |f| f.isDone }
-        puts "Loading data (#{num_finished.to_f/futures.size*100}% complete)"
+        puts "Loading data (%.2f%% complete)" % (num_finished.to_f/futures.size*100)
       end
 
       puts "Done loading data!  That took #{(Time.now - start).to_i} seconds"

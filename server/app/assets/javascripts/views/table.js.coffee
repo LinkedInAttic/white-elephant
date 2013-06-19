@@ -111,7 +111,12 @@ App.TableView = Em.View.extend(
         when "WEEKS"
           times.push(moment(time).format("MMM Do"))
         when "MONTHS"
-          times.push(moment(time).format("MMMM"))
+          times.push(moment(time).format("MMM YYYY"))
+        when "QUARTERS"
+          x = moment(time)
+          quarter = "Q" + (1 + Math.floor(x.month()/3))
+          quarter + " " + x.format("YYYY")
+          times.push(quarter + " " + x.format("YYYY"))
         else
           console?.log "Unexpected: #{unit}"
           return

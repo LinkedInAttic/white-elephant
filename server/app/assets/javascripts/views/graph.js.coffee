@@ -107,9 +107,24 @@ App.GraphView = Em.View.extend(
 
     yAxis.render();
 
+    unit = this.get('controller').get('selectedUnit')
+
+    xFormatter = switch unit
+      when "QUARTERS" then (x) -> 
+        x = moment(new Date(x*1000))
+        quarter = "Q" + (1 + Math.floor(x.month()/3))
+        quarter + " " + x.format("YYYY")
+      when "MONTHS" then (x) ->
+        x = moment(new Date(x*1000))
+        x.format("MMM YYYY")
+      when "DAYS", "WEEKS" then (x) ->
+        x = moment(new Date(x*1000))
+        x.format("ddd MMM Do YYYY")
+      else (x) -> new Date(x*1000).toDateString()
+
     hoverDetail = new Rickshaw.Graph.HoverDetail(
       graph: graph
-      xFormatter: (x) -> new Date(x*1000).toDateString()
+      xFormatter: xFormatter
     );
   ).observes("series","controller.chart_max","controller.chart_min")
   

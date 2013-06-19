@@ -397,6 +397,41 @@ class UsageData
           puts times.inspect
 
           times
+
+        when "QUARTERS"
+          start_date = Date.new(local_start_time.year,local_start_time.month)
+          end_date = Date.new(local_end_time.year,local_end_time.month)
+
+          ((start_date.month-1)%3).times do
+            start_date = start_date.prev_month
+          end
+
+          ((end_date.month-1)%3).times do
+            end_date = end_date.prev_month
+          end
+
+          3.times do 
+            end_date = end_date.prev_month
+          end
+
+          puts "start_date: #{start_date}"
+          puts "end_date: #{end_date}"
+
+          curr_date = start_date
+
+          times = []
+          while curr_date <= end_date do
+            local_time = Time.local(curr_date.year,curr_date.month)
+            timestamp = tz.local_to_utc(local_time).to_i
+            times << timestamp*1000
+
+            3.times { curr_date = curr_date.next_month }
+          end
+
+          puts times.inspect
+
+          times
+
         else
           raise "bad unit: #{time[:unit]}"
       end
@@ -516,6 +551,8 @@ class UsageData
           "roundTimestampToWeek(time,'#{time_zone}')"
         when "MONTHS"
           "roundTimestampToMonth(time,'#{time_zone}')"
+        when "QUARTERS"
+          "roundTimestampToQuarter(time,'#{time_zone}')"
         else
           raise "Unrecognized unit: #{unit}"
         end        

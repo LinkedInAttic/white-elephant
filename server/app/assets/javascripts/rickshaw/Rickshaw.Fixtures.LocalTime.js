@@ -19,6 +19,13 @@ Rickshaw.Fixtures.LocalTime = function() {
       seconds: 86400 * 365.25,
       formatter: function(d) { return d.getFullYear() }
     }, {
+      name: 'quarter',
+      seconds: 86400 * 30.5*3,
+      formatter: function(d) { 
+        var quarter = "Q" + (1 + Math.floor(d.getMonth()/3))
+        return quarter + " " + d.getFullYear();
+    }
+    },{
       name: 'month',
       seconds: 86400 * 30.5,
       formatter: function(d) { return self.months[d.getMonth()] }
@@ -85,6 +92,13 @@ Rickshaw.Fixtures.LocalTime = function() {
  
     if (unit.name == 'month') {
       var rounded = nearFuture.startOf('month');      
+      return rounded.valueOf() / 1000;
+    }
+
+    if (unit.name == 'quarter') {
+      var rounded = nearFuture.startOf('month');    
+      // round down to beginning of quarter
+      nearFuture.subtract('months',nearFuture.month()%3);
       return rounded.valueOf() / 1000;
     }
 

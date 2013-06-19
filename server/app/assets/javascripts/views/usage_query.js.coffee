@@ -19,7 +19,8 @@ App.UsageQueryView = Em.View.extend(
 
   units:[{label:"Daily", value:"DAYS"},
      {label:"Weekly", value:"WEEKS"},
-     {label:"Monthly", value:"MONTHS"}]
+     {label:"Monthly", value:"MONTHS"},
+     {label:"Quarterly", value:"QUARTERS"}]
 
   types:[{label:"Total Hours", value:"minutesTotal"},
          {label:"Reduce Hours", value:"minutesReduce"},
