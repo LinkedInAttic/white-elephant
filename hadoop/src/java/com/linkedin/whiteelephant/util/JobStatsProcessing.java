@@ -34,7 +34,7 @@ public class JobStatsProcessing
   // The logs are uploaded to directories named according to approximately the GMT time of the job submission.
   private static TimeZone timeZone = TimeZone.getTimeZone("GMT");
   
-  public static List<ProcessingTask> getTasks(FileSystem fs, String logsRoot, String clusterName, String outputPathRoot, boolean incremental, int numDays, int numDaysForced) throws IOException
+  public static List<ProcessingTask> getTasks(FileSystem fs, String logsRoot, String clusterName, String outputPathRoot, String suffix, boolean incremental, int numDays, int numDaysForced) throws IOException
   {    
     Calendar cal = Calendar.getInstance(timeZone);
     
@@ -59,7 +59,7 @@ public class JobStatsProcessing
     { 
       Date date = cal.getTime();
       
-      String pathFormat = String.format("%s/%s/daily/*/%s/%s/*.log",logsRoot,clusterName,yearFormat.format(date),dayFormat.format(date));
+      String pathFormat = String.format("%s/%s/daily/*/%s/%s/*%s",logsRoot,clusterName,yearFormat.format(date),dayFormat.format(date), suffix);
       FileStatus[] stats = fs.globStatus(new Path(pathFormat));
       
       StringBuilder msg = new StringBuilder(pathFormat + " => " + stats.length + " files");
