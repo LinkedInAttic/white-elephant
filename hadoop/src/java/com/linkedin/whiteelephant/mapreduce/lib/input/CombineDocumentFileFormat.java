@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -16,13 +17,13 @@ import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileRecordReader;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 
-public class CombineDocumentFileFormat extends CombineFileInputFormat<Text, Text>{
+public class CombineDocumentFileFormat extends CombineFileInputFormat<Text, BytesWritable>{
     
-    public static class WholeFileRecordReader extends RecordReader<Text, Text>{
+    public static class WholeFileRecordReader extends RecordReader<Text, BytesWritable>{
         private CombineFileSplit inputSplit;
         private Integer idx;
         private Text path;
-        private Text document;
+        private BytesWritable document;
         private Configuration conf;
         private boolean read;
         
@@ -45,7 +46,7 @@ public class CombineDocumentFileFormat extends CombineFileInputFormat<Text, Text
         }
 
         @Override
-        public Text getCurrentValue() throws IOException, InterruptedException {
+        public BytesWritable getCurrentValue() throws IOException, InterruptedException {
             return document;
         }
 
@@ -73,7 +74,7 @@ public class CombineDocumentFileFormat extends CombineFileInputFormat<Text, Text
                 int length = (int) inputSplit.getLength(idx);
                 IOUtils.readFully(input, bytes, offset, length);
                 
-                document = new Text();
+                document = new BytesWritable();
                 document.set(bytes, offset, length);
                 
                 path = new Text(file.toString());
@@ -91,9 +92,9 @@ public class CombineDocumentFileFormat extends CombineFileInputFormat<Text, Text
     }
 
     @Override
-    public RecordReader<Text, Text> createRecordReader(InputSplit arg0,
+    public RecordReader<Text, BytesWritable> createRecordReader(InputSplit arg0,
             TaskAttemptContext arg1) throws IOException {
-        return new CombineFileRecordReader<Text, Text>((CombineFileSplit) arg0, arg1, WholeFileRecordReader.class);
+        return new CombineFileRecordReader<Text, BytesWritable>((CombineFileSplit) arg0, arg1, WholeFileRecordReader.class);
     }
 
 }

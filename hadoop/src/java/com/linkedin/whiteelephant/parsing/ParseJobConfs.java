@@ -16,7 +16,9 @@
 
 package com.linkedin.whiteelephant.parsing;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,25 +28,26 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.avro.Schema;
-import org.apache.avro.Schema.Type;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.avro.mapred.AvroKey;
-import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.mapred.AvroWrapper;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
-import org.apache.avro.mapreduce.AvroKeyValueOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import com.linkedin.whiteelephant.mapreduce.MyAvroMultipleOutputs;
 import com.linkedin.whiteelephant.mapreduce.lib.input.CombineDocumentFileFormat;
 import com.linkedin.whiteelephant.mapreduce.lib.job.StagedOutputJob;
 import com.linkedin.whiteelephant.mapreduce.lib.job.StagedOutputJobExecutor;
@@ -127,7 +130,7 @@ public class ParseJobConfs
         
         final StagedOutputJob job = StagedOutputJob.createStagedJob(
            _props,
-           _name + "-parse-jobs-" + task.id,
+           _name + "-parse-confs-" + task.id,
            inputPaths,
            "/tmp" + outputPath,
            outputPath,
@@ -155,20 +158,27 @@ public class ParseJobConfs
     }
   }
   
-  public static class TheMapper extends Mapper<Text, Text, AvroWrapper<JobConf>, NullWritable> 
+  public static class TheMapper extends Mapper<Text, BytesWritable, AvroWrapper<JobConf>, NullWritable> 
   {
-      private static Pattern jobPattern = Pattern.compile("job_\\d+_\\d+");
+    private static Pattern jobPattern = Pattern.compile("job_\\d+_\\d+");
       
     String _clusterName;
+
+    private DocumentBuilder builder;
     
     @Override
     protected void setup(Context context)
     {
       _clusterName = context.getConfiguration().get("logs.cluster.name");
+      try {
+         builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException(e);
+      }
     }
     
     @Override
-    protected void map(Text key, Text value, Context context) throws IOException, InterruptedException 
+    protected void map(Text key, BytesWritable value, Context context) throws IOException, InterruptedException 
     {
         JobConf jobConf = new JobConf();
         
@@ -182,9 +192,37 @@ public class ParseJobConfs
         String jobId = jobMatcher.group();
         jobConf.setJobId(jobId);
         jobConf.setCluster(_clusterName);
-        jobConf.setConfiguration(new HashMap<CharSequence, Long>());
         
-        context.write(new AvroWrapper<JobConf>(jobConf), NullWritable.get());
+        Map<CharSequence, CharSequence> conf = getConfigurationMap(value); 
+        
+        jobConf.setConfiguration(conf);
+        
+        context.write(new AvroKey<JobConf>(jobConf), NullWritable.get());
+    }
+
+    private Map<CharSequence, CharSequence> getConfigurationMap(BytesWritable bytes) {
+        InputStream stream = new ByteArrayInputStream(bytes.getBytes(), 0, bytes.getLength());
+        Document doc = null;
+        try {
+            doc = builder.parse(stream);
+        } catch (SAXException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        NodeList children = doc.getElementsByTagName("configuration");
+        Element child = (Element) children.item(0);
+        NodeList properties = child.getElementsByTagName("property");
+        Map<CharSequence, CharSequence> conf = new HashMap<CharSequence, CharSequence>(properties.getLength());
+        for (int i = 0; i < properties.getLength(); i++){
+            Element property = (Element) properties.item(i);
+            String name = property.getElementsByTagName("name").item(0).getTextContent();
+            String value = property.getElementsByTagName("value").item(0).getTextContent();
+            conf.put(name, value);
+        }
+        return conf;
     }
   }
 }
