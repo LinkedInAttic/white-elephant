@@ -160,12 +160,14 @@ public class ParseJobConfs
   
   public static class TheMapper extends Mapper<Text, BytesWritable, AvroWrapper<JobConf>, NullWritable> 
   {
+
+    private Logger _log = Logger.getLogger(TheMapper.class);
     private static Pattern jobPattern = Pattern.compile("job_\\d+_\\d+");
       
     String _clusterName;
 
     private DocumentBuilder builder;
-    
+
     @Override
     protected void setup(Context context)
     {
@@ -180,49 +182,51 @@ public class ParseJobConfs
     @Override
     protected void map(Text key, BytesWritable value, Context context) throws IOException, InterruptedException 
     {
-        JobConf jobConf = new JobConf();
+      JobConf jobConf = new JobConf();
+      String filename = key.toString();
+      jobConf.setPath(filename);
         
-        String filename = key.toString();
-        jobConf.setPath(filename);
+      Matcher jobMatcher = jobPattern.matcher(filename);
+       
+      if (!jobMatcher.find()){
+        throw new RuntimeException("Expected to find jobId in the filename. Aborting");
+      }
+
+      String jobId = jobMatcher.group();
+      jobConf.setJobId(jobId);
+      jobConf.setCluster(_clusterName);
         
-        Matcher jobMatcher = jobPattern.matcher(filename);
-        if (!jobMatcher.find()){
-            System.err.println("Expected to find a jobId in the filename: " + filename);
-        }
-        String jobId = jobMatcher.group();
-        jobConf.setJobId(jobId);
-        jobConf.setCluster(_clusterName);
+      Map<CharSequence, CharSequence> conf = getConfigurationMap(value); 
         
-        Map<CharSequence, CharSequence> conf = getConfigurationMap(value); 
+      jobConf.setConfiguration(conf);
         
-        jobConf.setConfiguration(conf);
-        
-        context.write(new AvroKey<JobConf>(jobConf), NullWritable.get());
+      context.write(new AvroKey<JobConf>(jobConf), NullWritable.get());
     }
 
     private Map<CharSequence, CharSequence> getConfigurationMap(BytesWritable bytes) {
-        InputStream stream = new ByteArrayInputStream(bytes.getBytes(), 0, bytes.getLength());
-        Document doc = null;
-        try {
-            doc = builder.parse(stream);
-        } catch (SAXException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-        NodeList children = doc.getElementsByTagName("configuration");
-        Element child = (Element) children.item(0);
-        NodeList properties = child.getElementsByTagName("property");
-        Map<CharSequence, CharSequence> conf = new HashMap<CharSequence, CharSequence>(properties.getLength());
-        for (int i = 0; i < properties.getLength(); i++){
-            Element property = (Element) properties.item(i);
-            String name = property.getElementsByTagName("name").item(0).getTextContent();
-            String value = property.getElementsByTagName("value").item(0).getTextContent();
-            conf.put(name, value);
-        }
-        return conf;
+      InputStream stream = new ByteArrayInputStream(bytes.getBytes(), 0, bytes.getLength());
+      Document doc = null;
+      try {
+        doc = builder.parse(stream);
+      } catch (SAXException e) {
+        e.printStackTrace();
+        return null;
+      } catch (IOException e) {
+        e.printStackTrace();
+        return null;
+      }
+      NodeList children = doc.getElementsByTagName("configuration");
+      Element child = (Element) children.item(0);
+      NodeList properties = child.getElementsByTagName("property");
+      Map<CharSequence, CharSequence> conf = new HashMap<CharSequence, CharSequence>(properties.getLength());
+      for (int i = 0; i < properties.getLength(); i++)
+      {
+        Element property = (Element) properties.item(i);
+        String name = property.getElementsByTagName("name").item(0).getTextContent();
+        String value = property.getElementsByTagName("value").item(0).getTextContent();
+        conf.put(name, value);
+      }
+      return conf;
     }
   }
 }
