@@ -90,13 +90,13 @@ so they can be processed.  Check its documentation for details.
 
 ## Hadoop Jobs
 
-There are two Hadoop jobs, both managed by a job executor which keeps track of what
+There are three Hadoop jobs, all managed by a job executor which keeps track of what
 work needs to be done.
 
-The first job is a Hadoop log parser.  It reads log files stored in Hadoop, parses out
-relevant information, and writes the data out in an easier-to-work-with Avro format.
+The first two jobs parse and convert raw job configurations and logging into an easier-to-work-with Avro
+format. Together, these two datasets can serve as the base data for a variety of usage analytics workflows.
 
-The second job reads the Avro-fied log data and aggregates it per hour, writing the data
+The third and final job reads the Avro-fied log data and aggregates it per hour, writing the data
 out in Avro format.  It essentially builds a data cube which can be easily loaded by the
 web application into the DB and queried against.
 
