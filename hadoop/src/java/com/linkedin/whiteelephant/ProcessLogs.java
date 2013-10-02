@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import com.linkedin.whiteelephant.analysis.ComputeUsagePerHour;
 import com.linkedin.whiteelephant.mapreduce.lib.job.StagedOutputJobExecutor;
+import com.linkedin.whiteelephant.parsing.ParseJobConfs;
 import com.linkedin.whiteelephant.parsing.ParseJobsFromLogs;
 
 public class ProcessLogs implements Runnable
@@ -41,6 +42,7 @@ public class ProcessLogs implements Runnable
   
   private final ParseJobsFromLogs parseJobs;
   private final ComputeUsagePerHour usagePerHour;
+  private final ParseJobConfs parseJobConfs;
   
   public ProcessLogs(String name, Properties props) throws IOException {
     _log = Logger.getLogger(name);
@@ -59,6 +61,7 @@ public class ProcessLogs implements Runnable
     
     parseJobs = new ParseJobsFromLogs(name, props);
     usagePerHour = new ComputeUsagePerHour(name, props);
+    parseJobConfs = new ParseJobConfs(name, props);
   }
   
   public void run()
@@ -69,6 +72,7 @@ public class ProcessLogs implements Runnable
     {
       System.out.println("Parsing logs");
       
+      parseJobConfs.execute(_executor);
       parseJobs.execute(_executor);
       usagePerHour.execute(_executor);
       
