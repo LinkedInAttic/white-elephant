@@ -129,7 +129,7 @@ public class ParseJobsFromLogs
     {
       System.out.println("Processing cluster " + clusterName);
             
-      List<JobStatsProcessing.ProcessingTask> processingTasks = JobStatsProcessing.getTasks(_fs, _logsRoot, clusterName, _jobsOutputPathRoot, _incremental, _numDays, _numDaysForced);
+      List<JobStatsProcessing.ProcessingTask> processingTasks = JobStatsProcessing.getTasks(_fs, _logsRoot, clusterName, _jobsOutputPathRoot, "log", _incremental, _numDays, _numDaysForced);
       
       for (JobStatsProcessing.ProcessingTask task : processingTasks)
       {      
