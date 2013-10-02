@@ -54,9 +54,7 @@ import com.linkedin.whiteelephant.mapreduce.lib.job.StagedOutputJobExecutor;
 import com.linkedin.whiteelephant.util.JobStatsProcessing;
 
 public class ParseJobConfs
-{  
-  private static final String CPU_MILLISECONDS = "CPU_MILLISECONDS";
-  
+{
   private final Logger _log;
   private final Properties _props;
   private final FileSystem _fs;
