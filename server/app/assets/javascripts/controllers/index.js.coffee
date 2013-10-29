@@ -139,19 +139,22 @@ App.IndexController = Ember.Controller.extend(
 
     console?.log "Loading usage data"
 
+    data = {
+      start: start_time,
+      end: end_time,
+      unit: selected_unit
+      zone: selected_zone
+      user: selected_users.join(",")
+      users_to_aggregate: users_to_aggregate.join(",")
+      cluster: selected_cluster
+      type: selected_type
+    }
+
     this.incrementInProgress()
     $.ajax(
       url: "api/usage"
-      type: "GET"
-      data:
-        start: start_time,
-        end: end_time,
-        unit: selected_unit
-        zone: selected_zone
-        user: selected_users.join(",")
-        users_to_aggregate: users_to_aggregate.join(",")
-        cluster: selected_cluster
-        type: selected_type
+      type: "POST"
+      data: JSON.stringify(data)        
       success: (data) =>
         this.decrementInProgress()
         this.set("usageData",data)

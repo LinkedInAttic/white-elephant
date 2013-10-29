@@ -42,54 +42,69 @@ get "/api/clusters" do
 end
 
 get "/api/usage" do
-  content_type :json
+  get_usage(params)
+end
 
-  date_start = params[:start] || (halt 500)
-  date_end = params[:end] || (halt 500)
-  unit = params[:unit] || (halt 500)
-  zone = params[:zone] || (halt 500)
-  users = params[:user] || (halt 500)
-  users_to_aggregate = params[:users_to_aggregate] || (halt 500)
-  cluster = params[:cluster] || (halt 500)
-  type = (params[:type] && params[:type].to_sym) || (halt 500)
+post "/api/usage" do
+  parsed = JSON.parse request.body.read
+  params = {}
+  parsed.each do |k,v|
+    params[k.to_sym] = v
+  end 
+  get_usage(params)
+end
 
-  time = {
-    :start => date_start.to_i,
-    :end => date_end.to_i,
-    :unit => unit,
-    :zone => zone
-  }
+helpers do 
+  def get_usage(params)
+    content_type :json
 
-  users = users.split(",").uniq
-  users_to_aggregate = users_to_aggregate.split(",").uniq
+    date_start = params[:start] || (halt 500)
+    date_end = params[:end] || (halt 500)
+    unit = params[:unit] || (halt 500)
+    zone = params[:zone] || (halt 500)
+    users = params[:user] || (halt 500)
+    users_to_aggregate = params[:users_to_aggregate] || (halt 500)
+    cluster = params[:cluster] || (halt 500)
+    type = (params[:type] && params[:type].to_sym) || (halt 500)
 
-  return_val = {}
+    time = {
+      :start => date_start.to_i,
+      :end => date_end.to_i,
+      :unit => unit,
+      :zone => zone
+    }
 
-  if users.size > 0
-    result = UsageData.fetch_per_user_data(cluster,users,time,type)
+    users = users.split(",").uniq
+    users_to_aggregate = users_to_aggregate.split(",").uniq
 
-    return_val[:times] = result[:times]
-    return_val[:users] = result[:users]
-  else
-    return_val[:users] = []
+    return_val = {}
+
+    if users.size > 0
+      result = UsageData.fetch_per_user_data(cluster,users,time,type)
+
+      return_val[:times] = result[:times]
+      return_val[:users] = result[:users]
+    else
+      return_val[:users] = []
+    end
+
+    return_val[:users_aggregated] = []
+    return_val[:num_aggregated_users] = 0
+
+    if users_to_aggregate.size > 0    
+      result = UsageData.fetch_aggregated_data(cluster,users_to_aggregate,time,type)
+      
+      return_val[:users_aggregated] = result[:data]
+      return_val[:num_aggregated_users] = users_to_aggregate.size
+
+      # get times from first available, they're all the same
+      return_val[:times] ||= result[:times]
+    end
+
+    return_val[:cluster] = cluster
+
+    return_val.to_json
   end
-
-  return_val[:users_aggregated] = []
-  return_val[:num_aggregated_users] = 0
-
-  if users_to_aggregate.size > 0    
-    result = UsageData.fetch_aggregated_data(cluster,users_to_aggregate,time,type)
-    
-    return_val[:users_aggregated] = result[:data]
-    return_val[:num_aggregated_users] = users_to_aggregate.size
-
-    # get times from first available, they're all the same
-    return_val[:times] ||= result[:times]
-  end
-
-  return_val[:cluster] = cluster
-
-  return_val.to_json
 end
 
 get "/api/table" do
