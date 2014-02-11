@@ -9,6 +9,12 @@ use File::Find     ();
 use File::Basename ();
 use Getopt::Long;
 use Date::Calc ( "Add_Delta_Days" );
+use Parallel::ForkManager;
+use DateTime;
+use XML::Simple;
+use FindBin;
+use lib "$FindBin::Bin/lib/perl5";
+use File::Pid;
 
 # Essentially how this works is we do a LSR on the hdfs data dir to get a list of files.
 # Next we use find to find files less then "X" days.
@@ -17,21 +23,53 @@ use Date::Calc ( "Add_Delta_Days" );
 # Finally shell out to hadoop with a dfs put to push the files from local disk to hdfs.
 
 my ( $CONFIG, $GRID, $HADOOP_DEST, $QUEUES, $DAYS, $options, $HADOOP_HOME, $HADOOP, $HADOOP_LOG_DIR );
+my ( $my_queues, $my_parallel, $my_days, $my_verbose );
+my ( $my_logpath, $my_loghandle );
 
 # Keep track of log files on local disk to upload.
 my @NONXMLS;
 
 # Only upload logs older than 24 hours.
 my $OLDERTHAN = time() - ( 60 * 60 * 24 * 1 );
+$my_logpath = "/var/tmp/hadoop/hadoop-statsupload-log-" . DateTime->now->strftime("%Y%m%d-%H%M");
+my $xml_simple = new XML::Simple;
 
 my $NEWERTHAN;
 
 # Keeps track of which files are already uploaded to HDFS.
 my %DIRSTRUCT = ();
 
+if ($< == 0) {
+  die "ERROR| Cannot execute as root! Safety precaution. \n";
+}
+
 sub usage {
-    print "statsupload.pl --config /path/to/my/config/file.pm\n";
+    print "statsupload.pl \n";
+    print "        --config   /path/to/my/config/file.pm\n";
+    print "        --queues   list of queues to process \n";
+    print "        --days     number of last days\n";
+    print "        --parallel number of parallel uploads to hdfs max(5) and default(2)\n";
+    print "        --verbose  be loud!\n";
     exit 1;
+}
+
+sub openlog {
+  unless ( open($my_loghandle, '>', $my_logpath) ) {
+    die "ERROR| Unable to open ${my_logpath} to write:$@\n";
+  }
+}
+
+sub logmsg {
+  my $my_msg = shift;
+  my $my_ts = DateTime->now;
+  print STDOUT "$my_ts | $my_msg" if ( defined $my_verbose );
+  print $my_loghandle "$my_ts | $my_msg";
+}
+
+sub closelog {
+  if ( defined $my_loghandle ) {
+    close $my_loghandle || die "ERROR| Unable to close ${my_logpath} file:$@\n";
+  }
 }
 
 sub prefilter {
@@ -52,9 +90,9 @@ sub prefilter {
 
     my $path = "$HADOOP_DEST/$GRID/daily/$queue/$Year/${Month}${Day}";
 
-    my $cmd = "$HADOOP dfs -lsr $path";
+    my $cmd = "$HADOOP fs -lsr $path";
 
-    print "$cmd\n";
+    logmsg( "$cmd\n" );
 
     open( FH, "$cmd 2>/dev/null|" );
     while ( <FH> ) {
@@ -83,28 +121,28 @@ sub pathbuilder {
     my $newname;
 
     if ( !exists( $DIRSTRUCT{"$HADOOP_DEST/$grid"} ) ) {
-        system( "$HADOOP dfs -mkdir $HADOOP_DEST/$grid 2>/dev/null" );
+        system( "$HADOOP fs -mkdir $HADOOP_DEST/$grid 2>/dev/null" );
         $DIRSTRUCT{"$HADOOP_DEST/$grid"} = 1;
     }
 
     if ( !exists( $DIRSTRUCT{"$HADOOP_DEST/$grid/$typedir"} ) ) {
-        system( "$HADOOP dfs -mkdir $HADOOP_DEST/$grid/$typedir 2>/dev/null" );
+        system( "$HADOOP fs -mkdir $HADOOP_DEST/$grid/$typedir 2>/dev/null" );
         $DIRSTRUCT{"$HADOOP_DEST/$grid/$typedir"} = 1;
     }
 
     if ( !exists( $DIRSTRUCT{"$HADOOP_DEST/$grid/$typedir/$queue"} ) ) {
-        system( "$HADOOP dfs -mkdir $HADOOP_DEST/$grid/$typedir/$queue 2>/dev/null" );
+        system( "$HADOOP fs -mkdir $HADOOP_DEST/$grid/$typedir/$queue 2>/dev/null" );
         $DIRSTRUCT{"$HADOOP_DEST/$grid/$typedir/$queue"} = 1;
     }
     $newname = sprintf( "$HADOOP_DEST/$grid/$typedir/$queue/%04d", $year );
     if ( !exists( $DIRSTRUCT{"$newname"} ) ) {
-        system( "$HADOOP dfs -mkdir $newname 2>/dev/null" );
+        system( "$HADOOP fs -mkdir $newname 2>/dev/null" );
         $DIRSTRUCT{"$newname"} = 1;
     }
 
     $newname = sprintf( "$HADOOP_DEST/$grid/$typedir/$queue/%04d/%02d%02d", $year, $month, $day );
     if ( !exists( $DIRSTRUCT{"$newname"} ) ) {
-        system( "$HADOOP dfs -mkdir $newname 2>/dev/null" );
+        system( "$HADOOP fs -mkdir $newname 2>/dev/null" );
         $DIRSTRUCT{"$newname"} = 1;
     }
 
@@ -132,29 +170,21 @@ sub wanted {
 sub findqueue {
     # open file and find queue name
     my $file = shift;
-    my ( $line, $beg, $q );
+    my ( $q );
 
-    open( FH, "<$file" ) || do {
-        print STDERR "$0: $! [$file]\n";
-        return ( undef );
-    };
-    while ( <FH> ) {
-        if ( /<property>/ ) {
-            if ( /<name>/ ) {
-                if ( />mapred.job.queue.name</ ) {
-                    $line = $_;
-                    $beg  = ( split( /value/ ) )[1];
-                    $q    = ( split( /[><]/, $beg ) )[1];
-                }
-            }
-        }
-    }
-    close( FH );
+    my $xml_data = $xml_simple->XMLin($file);
 
-    if ( !$q ) {    # we didn't find any queue names
+    if ( defined $xml_data ) {
+      if ( defined $xml_data->{'property'}->{'mapred.job.queue.name'}->{'value'} ) {
+        $q = $xml_data->{'property'}->{'mapred.job.queue.name'}->{'value'};
+      } else {
         $q = "unknown";
+      }
     }
 
+    logmsg("INFO| queue for $file is $q \n");
+    undef $xml_data;
+    
     return ( $q );
 
 }
@@ -162,29 +192,53 @@ sub findqueue {
 # GO MAIN GO!
 
 # we only care about one option and that's our config file
-$options = GetOptions( "configuration|config|c=s" => \$CONFIG, );
+$options = GetOptions( "configuration|config|c=s" => \$CONFIG, 
+                       "verbose|v" => \$my_verbose,
+                       "parallel|p=i" => \$my_parallel,
+                       "days|d=i" => \$my_days,
+                       "queues|q=s@" => \$my_queues,);
 
 if ( !$CONFIG ) { usage(); }
 # load config file
 if ( -r $CONFIG ) {
     # lazy way to suck in config file as we don't have fancy YAML libs available
     require $CONFIG;
+    openlog();
     if ( exists( $cfg::CFG{'grid'} ) ) {
         $GRID = $cfg::CFG{'grid'};
     } else {
         die( "Make sure 'grid' is set in your config file" );
     }
-    if ( exists( $cfg::CFG{'queues'} ) ) {
+    if ( defined $my_queues) {
+      @$QUEUES = (split(/,/,join(',',@$my_queues)));
+    } elsif ( exists( $cfg::CFG{'queues'} ) ) {
         $QUEUES = $cfg::CFG{'queues'};
-    } else {
+    } else{
         die( "Make sure 'queues' is set in your config file" );
     }
+    logmsg( "INFO| Processing for queues: \n" );
+    logmsg( "INFO| Queue: $_\n" ) foreach (@$QUEUES);
+    if ( defined $my_parallel ) {
+      unless ( $my_parallel =~ /\d/ && ( $my_parallel > 1 && $my_parallel < 6 ) ) {
+        $my_parallel = 2;
+      }
+    } else { 
+      $my_parallel = 2;
+    }
+    logmsg ( "INFO| Parallel uploads will be $my_parallel \n" );
     if ( exists( $cfg::CFG{'destination'} ) ) {
         $HADOOP_DEST = $cfg::CFG{'destination'};
     } else {
         die( "Make sure 'destination' is set in your config file" );
     }
-    if ( exists( $cfg::CFG{'days'} ) ) {
+    if ( defined $my_days ) {
+      if ( $my_days !~ /\d+/ ) {
+        $DAYS = 3; # default
+      } else {
+        $DAYS = $my_days;
+      }
+      $NEWERTHAN = time() - ( 60 * 60 * 24 * $DAYS )
+    } elsif ( exists( $cfg::CFG{'days'} ) ) {
         $DAYS = $cfg::CFG{'days'};
 
         # Ignore local log files older than specified
@@ -195,6 +249,7 @@ if ( -r $CONFIG ) {
     } else {
         die( "Make sure 'days' is set in your config file" );
     }
+    logmsg( "INFO| Number of days for which logs are to be uploaded : $DAYS \n" );
     if ( exists( $cfg::CFG{'hadoop_home'} ) ) {
         $HADOOP_HOME = $cfg::CFG{'hadoop_home'};
         $HADOOP      = "$HADOOP_HOME/bin/hadoop";
@@ -216,21 +271,20 @@ do {
     my ( $deltayear, $deltamonth, $deltaday );
     my @fileparts;
 
-    if ( -f "/tmp/statsupload.lock" ) {
-        print STDERR "$0: already running (found /tmp/statsupload.lock)\n";
-        exit 1;
+    my $pid_file = File::Pid->new({file => "/tmp/statsupload.lock"});
+
+    if ( my $my_pid = $pid_file->running ) {
+      die "ERROR| $0: Already running: $my_pid \n";
     }
 
-    open( FH, ">/tmp/statsupload.lock" ) or die "$0:$! [/tmp/statsupload.lock]";
-    print FH "hey";
-    close( FH );
+    $pid_file->write;
 
     # figure out which days we need ...
     my ( $d, $m, $y ) = ( localtime() )[3, 4, 5];
     $y += 1900;
     $m += 1;
 
-    print "Checking the last $DAYS days in HDFS for existing data\n";
+    logmsg( "Checking the last $DAYS days in HDFS for existing data\n" );
 
     # loop from 0 to $DAYS and while doing so, call Add_Delta_Days for each day.
     for ( my $daycount = 0; $daycount <= $DAYS; $daycount++ ) {
@@ -243,11 +297,11 @@ do {
 
     }
 
-    print "Found " . keys( %DIRSTRUCT ) . " existing files in HDFS\n";
+    logmsg( "Found " . keys( %DIRSTRUCT ) . " existing files in HDFS\n");
 
     my $history_dir = "$HADOOP_LOG_DIR/history";
 
-    print "\nSearching $history_dir for logs\n";
+    logmsg( "\nSearching $history_dir for logs\n" );
 
     File::Find::find( { wanted => \&wanted }, $history_dir );
 
@@ -257,7 +311,25 @@ do {
     my $skipped = 0;
     my $failed = 0;
 
+    my $fork_manager = new Parallel::ForkManager($my_parallel); 
+
+    $fork_manager->run_on_finish(
+        sub { 
+          my ($pid, $exit_code, $ident) = @_;
+          print "***** $ident just got finished with PID $pid and exit code: $exit_code\n";
+        }
+        );
+
+    $fork_manager->run_on_start(
+        sub { 
+          my ($pid,$ident)=@_;
+          print "***** $ident just started, pid: $pid\n";
+        }
+        );
+
     foreach $filename ( @NONXMLS ) {
+
+        $fork_manager->start($filename) and next; # fork here
 
         $total += 1;
 
@@ -291,7 +363,8 @@ do {
         }
 
         if (!$jobconfxml) {
-            print "\nFailed to locate job conf xml file for $job_name, skipping...\n";
+            print STDERR "\nFailed to locate job conf xml file for $job_name, skipping...\n";
+            logmsg( "Failed to locate job conf xml file for $job_name, skipping...\n" );
             $skipped += 1;
             next;
         }
@@ -310,10 +383,10 @@ do {
         # need to strip 'hdfs://mynamenode.example.com:9000' off hdfsname
         $hdfsname =~ m!^hdfs://.*?(/.*$)!;
         if ( !exists( $DIRSTRUCT{$1} ) ) {
-            print "\nUploading $logfile\n";
-            print "-> $hdfsname\n";
-            my $cmd = "$HADOOP dfs -put $logfile $hdfsname";
-            print "command: $cmd\n";
+            logmsg( "\nUploading $logfile\n" );
+            logmsg( " --> $hdfsname\n" );
+            my $cmd = "$HADOOP fs -put $logfile $hdfsname";
+            logmsg( "command: $cmd \n" );
             my $return_code = system( "$cmd" );
             if ($return_code == 0)
             {
@@ -321,7 +394,8 @@ do {
             }
             else
             {
-                print "Upload failed\n";
+                print STDERR "ERROR| Upload failed\n";
+                logmsg( "Upload failed\n" );
                 $failed += 1;
             }
         }
@@ -334,10 +408,10 @@ do {
         # as that is missing from keys in %DIRSTRUCT
         $confname =~ m!^hdfs://.*?(/.*$)!;
         if ( !exists( $DIRSTRUCT{$1} ) ) {
-            print "\nUploading $jobconfxml\n";
-            print "-> $confname\n";
-            my $cmd = "$HADOOP dfs -put $jobconfxml $confname";
-            print "command: $cmd\n";
+            logmsg( "\nUploading $jobconfxml\n" );
+            logmsg( "-> $confname\n" );
+            my $cmd = "$HADOOP fs -put $jobconfxml $confname";
+            logmsg( "command: $cmd\n" );
             my $return_code = system( "$cmd" );
             if ($return_code == 0)
             {
@@ -345,23 +419,29 @@ do {
             }
             else
             {
-                print "Upload failed\n";
+                print STDERR "ERROR| Upload failed\n";
+                logmsg( "Upload failed\n" );
                 $failed += 1;
             }
         }
         else {
             $existing_count += 1;
         }
+
+        $fork_manager->finish;
     }
+
+    $fork_manager->wait_all_children;
 
     if ($total == 0)
     {
-        print "\nFound no new logs to upload\n";
+        logmsg( "\nFound no new logs to upload\n");
     }
     else
     {
-        print "\nUploaded $upload_count files, found $existing_count existing, skipped $skipped, and $failed failed\n"
+        logmsg( "\nUploaded $upload_count files, found $existing_count existing, skipped $skipped, and $failed failed\n" );
     }
 
-    unlink( "/tmp/statsupload.lock" );
+    $pid_file->remove or warn "Could not unlink the pid file /tmp/statsupload.lock\n";
+    closelog();
 };
